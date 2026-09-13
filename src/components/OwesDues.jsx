@@ -1,0 +1,729 @@
+import React, { useState } from 'react';
+import { 
+  ArrowLeftRight, 
+  ArrowUpRight, 
+  ArrowDownLeft, 
+  Plus, 
+  CheckCircle2, 
+  Clock, 
+  CheckSquare, 
+  Square, 
+  Trash2, 
+  Edit3, 
+  Phone, 
+  MessageSquare, 
+  Calendar, 
+  AlertCircle, 
+  DollarSign, 
+  Split, 
+  X,
+  Sparkles,
+  Info,
+  UserCheck
+} from 'lucide-react';
+import confetti from 'canvas-confetti';
+import { BudgetCalculator } from '../services/budgetCalculator';
+import { StorageService } from '../services/storage';
+
+export default function OwesDues({
+  owesDues,
+  people,
+  settings,
+  onAddOweDue,
+  onUpdateOweDue,
+  onDeleteOweDue,
+  onToggleSettled,
+  onPartialSettle,
+  onCleanupExpiredSettled,
+  onAddPerson
+}) {
+  const currencySymbol = settings.currencySymbol || '₹';
+  const [activeTab, setActiveTab] = useState('in_process'); // 'in_process' or 'settled'
+  const [selectedPersonFilter, setSelectedPersonFilter] = useState('all');
+
+  // Modal State for Add / Edit
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+  const [formData, setFormData] = useState({
+    title: '',
+    amount: '',
+    type: 'due', // 'due' (they owe me) or 'owe' (I owe them)
+    personId: '',
+    date: new Date().toISOString().split('T')[0]
+  });
+
+  // Modal State for Partial Settlement
+  const [isPartialModalOpen, setIsPartialModalOpen] = useState(false);
+  const [partialTargetItem, setPartialTargetItem] = useState(null);
+  const [partialAmount, setPartialAmount] = useState('');
+
+  // Calculate Net positions & summaries
+  const summary = BudgetCalculator.calculateOwesDuesSummary(owesDues, people);
+
+  // Filter items by status tab and person
+  const tabItems = owesDues.filter(item => {
+    const matchesTab = activeTab === 'in_process' ? item.status !== 'settled' : item.status === 'settled';
+    const matchesPerson = selectedPersonFilter === 'all' || String(item.personId) === String(selectedPersonFilter);
+    return matchesTab && matchesPerson;
+  }).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  const openAddModal = (defaultType = 'due', preselectedPersonId = '') => {
+    setEditingItem(null);
+    setFormData({
+      title: '',
+      amount: '',
+      type: defaultType,
+      personId: preselectedPersonId || (people[0]?.id || ''),
+      date: new Date().toISOString().split('T')[0]
+    });
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (item) => {
+    setEditingItem(item);
+    setFormData({
+      title: item.title || '',
+      amount: String(item.amount || ''),
+      type: item.type || 'due',
+      personId: String(item.personId || ''),
+      date: item.date || new Date().toISOString().split('T')[0]
+    });
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setEditingItem(null);
+  };
+
+  const openPartialModal = (item) => {
+    setPartialTargetItem(item);
+    setPartialAmount('');
+    setIsPartialModalOpen(true);
+  };
+
+  const closePartialModal = () => {
+    setIsPartialModalOpen(false);
+    setPartialTargetItem(null);
+  };
+
+  const handleToggle = (item) => {
+    const isNowSettled = item.status !== 'settled';
+    if (isNowSettled) {
+      // Trigger festive confetti
+      confetti({
+        particleCount: 50,
+        spread: 60,
+        origin: { y: 0.7 }
+      });
+    }
+    onToggleSettled(item.id);
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const amountNum = parseFloat(formData.amount);
+    if (isNaN(amountNum) || amountNum <= 0) {
+      alert('Please enter a valid amount.');
+      return;
+    }
+    if (!formData.title.trim()) {
+      alert('Please enter a description or reason.');
+      return;
+    }
+    if (!formData.personId) {
+      alert('Please select or create an identified person with 4-digit ID.');
+      return;
+    }
+
+    const personObj = people.find(p => String(p.id) === String(formData.personId));
+    const personName = personObj ? personObj.name : `Person #${formData.personId}`;
+    const personPhone = personObj ? personObj.phone : '';
+
+    if (editingItem) {
+      onUpdateOweDue({
+        ...editingItem,
+        title: formData.title.trim(),
+        amount: amountNum,
+        type: formData.type,
+        personId: formData.personId,
+        personName,
+        personPhone,
+        date: formData.date
+      });
+    } else {
+      const newItem = {
+        id: `od_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+        title: formData.title.trim(),
+        amount: amountNum,
+        originalAmount: amountNum,
+        type: formData.type,
+        personId: formData.personId,
+        personName,
+        personPhone,
+        status: 'in_process',
+        date: formData.date,
+        settlementDate: null,
+        createdAt: new Date().toISOString()
+      };
+      onAddOweDue(newItem);
+    }
+
+    closeModal();
+  };
+
+  const handlePartialSubmit = (e) => {
+    e.preventDefault();
+    if (!partialTargetItem) return;
+    const pAmt = parseFloat(partialAmount);
+    if (isNaN(pAmt) || pAmt <= 0 || pAmt >= partialTargetItem.amount) {
+      alert(`Partial settlement amount must be greater than 0 and less than ${currencySymbol}${partialTargetItem.amount}. For full settlement, check the checkbox instead.`);
+      return;
+    }
+
+    onPartialSettle(partialTargetItem.id, pAmt);
+    closePartialModal();
+    confetti({ particleCount: 30, spread: 50, origin: { y: 0.7 } });
+  };
+
+  // WhatsApp quick link builder
+  const getWhatsAppLink = (phone, personName, netAmount, isDue) => {
+    if (!phone) return null;
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    const message = isDue
+      ? `Hi ${personName}, gentle reminder regarding the pending balance of ${currencySymbol}${netAmount} on Expenso. Whenever you get time, please settle it! Thanks!`
+      : `Hi ${personName}, I'm preparing to settle the balance of ${currencySymbol}${Math.abs(netAmount)} I owe you on Expenso. Please share your UPI ID / details.`;
+    return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+  };
+
+  return (
+    <div className="space-y-6 pb-12">
+      {/* Header Bar */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl glass-panel">
+        <div>
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
+              <ArrowLeftRight className="w-5 h-5" />
+            </div>
+            <h1 className="text-xl font-bold text-white tracking-tight">Owes & Dues Manager</h1>
+          </div>
+          <p className="text-xs text-slate-400 mt-1">
+            Track money owed to you or payable by you, net calculations per person, and 30-day auto-settlement deletion.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => openAddModal('due')}
+            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-md transition-all"
+          >
+            <ArrowDownLeft className="w-4 h-4" /> + Someone Owes Me (Due)
+          </button>
+          <button
+            onClick={() => openAddModal('owe')}
+            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs shadow-md transition-all"
+          >
+            <ArrowUpRight className="w-4 h-4" /> + I Owe Someone
+          </button>
+        </div>
+      </div>
+
+      {/* Person-Wise Net Summary Grid (Rule 12) */}
+      <div className="p-5 rounded-2xl glass-panel space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <UserCheck className="w-4 h-4 text-indigo-400" />
+            <h3 className="font-bold text-white text-sm">Person-Wise Net Position (Calculated Balance)</h3>
+          </div>
+          <span className="text-[11px] text-slate-400">
+            Positive = They owe you | Negative = You owe them
+          </span>
+        </div>
+
+        {summary.personNetList.length === 0 ? (
+          <p className="text-xs text-slate-500 py-2">No people registered in your directory yet.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {summary.personNetList.map(person => {
+              const hasNetDue = person.net > 0;
+              const hasNetOwe = person.net < 0;
+              const isSettled = person.net === 0;
+
+              return (
+                <div
+                  key={person.id}
+                  className={`p-3.5 rounded-xl border transition-all ${
+                    hasNetDue
+                      ? 'bg-emerald-950/20 border-emerald-500/30'
+                      : hasNetOwe
+                        ? 'bg-rose-950/20 border-rose-500/30'
+                        : 'bg-slate-900/40 border-slate-800'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-bold text-white text-sm">{person.name}</h4>
+                      <span className="text-[10px] text-slate-400 font-mono">ID: #{person.id}</span>
+                    </div>
+
+                    <div className="text-right">
+                      <div className={`text-base font-black ${
+                        hasNetDue ? 'text-emerald-400' : hasNetOwe ? 'text-rose-400' : 'text-slate-400'
+                      }`}>
+                        {hasNetDue ? `+${currencySymbol}${person.net.toLocaleString()}` : hasNetOwe ? `-${currencySymbol}${Math.abs(person.net).toLocaleString()}` : 'Settled'}
+                      </div>
+                      <span className="text-[10px] text-slate-500 uppercase tracking-wider">
+                        {hasNetDue ? 'They owe you' : hasNetOwe ? 'You owe them' : 'All Clear'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Actions & WhatsApp Contact */}
+                  <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-xs">
+                    <button
+                      onClick={() => setSelectedPersonFilter(selectedPersonFilter === person.id ? 'all' : person.id)}
+                      className={`text-[11px] font-medium transition-colors ${
+                        selectedPersonFilter === person.id ? 'text-indigo-400 font-bold' : 'text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      {selectedPersonFilter === person.id ? '✓ Filtering' : 'Filter records'}
+                    </button>
+
+                    {person.phone && (
+                      <div className="flex items-center gap-2">
+                        {person.net !== 0 && (
+                          <a
+                            href={getWhatsAppLink(person.phone, person.name, person.net, hasNetDue)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-colors"
+                            title="Send WhatsApp Reminder"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                        <a
+                          href={`tel:${person.phone}`}
+                          className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                          title="Call Phone"
+                        >
+                          <Phone className="w-3.5 h-3.5" />
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Tabs & Controls */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        {/* In Process vs Settled Tabs (Rule 8) */}
+        <div className="flex items-center p-1 rounded-xl bg-slate-900 border border-slate-800">
+          <button
+            onClick={() => setActiveTab('in_process')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+              activeTab === 'in_process'
+                ? 'bg-indigo-600 text-white shadow-md'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Clock className="w-4 h-4" />
+            In Process
+            <span className="px-1.5 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[10px]">
+              {owesDues.filter(i => i.status !== 'settled').length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('settled')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+              activeTab === 'settled'
+                ? 'bg-emerald-600 text-white shadow-md'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <CheckCircle2 className="w-4 h-4" />
+            Settled (30-Day Window)
+            <span className="px-1.5 py-0.5 rounded-full bg-slate-800 text-slate-300 text-[10px]">
+              {owesDues.filter(i => i.status === 'settled').length}
+            </span>
+          </button>
+        </div>
+
+        {/* Person filter clear button if active */}
+        {selectedPersonFilter !== 'all' && (
+          <button
+            onClick={() => setSelectedPersonFilter('all')}
+            className="text-xs px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 inline-flex items-center gap-1.5 transition-colors"
+          >
+            <X className="w-3.5 h-3.5" /> Clear Person Filter
+          </button>
+        )}
+
+        {/* 30-Day Cleanup Action in Settled tab */}
+        {activeTab === 'settled' && (
+          <button
+            onClick={onCleanupExpiredSettled}
+            className="text-xs px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 inline-flex items-center gap-1.5 transition-colors"
+            title="Remove settled items older than 30 days"
+          >
+            <Trash2 className="w-3.5 h-3.5" /> Clean Up Expired (&gt;30 Days)
+          </button>
+        )}
+      </div>
+
+      {/* Cards List */}
+      {tabItems.length === 0 ? (
+        <div className="py-16 text-center rounded-2xl glass-panel">
+          <Sparkles className="w-12 h-12 mx-auto text-slate-600 mb-3" />
+          <h3 className="text-base font-semibold text-slate-300">
+            {activeTab === 'in_process' ? 'No pending Owes or Dues' : 'No Settled records'}
+          </h3>
+          <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+            {activeTab === 'in_process'
+              ? 'All accounts are settled! Record new money owed or payable whenever needed.'
+              : 'Settled items stay here for a 30-day deletion window.'}
+          </p>
+          {activeTab === 'in_process' && (
+            <button
+              onClick={() => openAddModal('due')}
+              className="mt-5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md inline-flex items-center gap-1.5 transition-all"
+            >
+              <Plus className="w-4 h-4" /> Add Record
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {tabItems.map(item => {
+            const isSettled = item.status === 'settled';
+            const isDue = item.type === 'due'; // they owe me
+            const deletionInfo = BudgetCalculator.getSettledDeletionInfo(item);
+
+            return (
+              <div
+                key={item.id}
+                className={`p-4 rounded-2xl glass-panel-interactive border transition-all ${
+                  isSettled ? 'border-slate-800/80 opacity-90' : isDue ? 'border-emerald-500/20' : 'border-rose-500/20'
+                }`}
+              >
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  {/* Left: Checkbox + Description */}
+                  <div className="flex items-start sm:items-center gap-3.5">
+                    {/* Checkbox (Rule 8: Unchecked = In Process, Checked = Settled) */}
+                    <button
+                      onClick={() => handleToggle(item)}
+                      className={`p-1.5 rounded-xl border transition-all flex-shrink-0 mt-0.5 sm:mt-0 ${
+                        isSettled
+                          ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/30'
+                          : 'bg-slate-900 border-slate-700 text-slate-500 hover:border-slate-500 hover:text-slate-300'
+                      }`}
+                      title={isSettled ? 'Uncheck to return to In Process' : 'Check to mark Settled'}
+                    >
+                      {isSettled ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5" />}
+                    </button>
+
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h4 className={`text-base font-bold ${isSettled ? 'line-through text-slate-400' : 'text-white'}`}>
+                          {item.title}
+                        </h4>
+                        <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full ${
+                          isDue ? 'badge-due' : 'badge-owe'
+                        }`}>
+                          {isDue ? 'Due (They owe you)' : 'Owe (You owe them)'}
+                        </span>
+                        {item.sharedExpenseId && (
+                          <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full badge-shared">
+                            From Shared Bill
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400 mt-1">
+                        <span className="font-semibold text-slate-200">
+                          {item.personName} <span className="text-slate-500 text-[10px]">#{item.personId}</span>
+                        </span>
+                        <span>•</span>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3.5 h-3.5 text-slate-500" /> Created: {item.date}
+                        </span>
+                        {isSettled && item.settlementDate && (
+                          <>
+                            <span>•</span>
+                            <span className="text-emerald-400 font-medium">
+                              Settled on: {new Date(item.settlementDate).toLocaleDateString()}
+                            </span>
+                            <span>•</span>
+                            <span className="text-amber-400 font-medium">
+                              {deletionInfo.daysRemaining} days left in deletion window
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right: Amount & Actions */}
+                  <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-3">
+                    <div className="text-left sm:text-right">
+                      <span className={`text-lg font-black ${
+                        isSettled ? 'text-slate-400' : isDue ? 'text-emerald-400' : 'text-rose-400'
+                      }`}>
+                        {currencySymbol} {(Number(item.amount) || 0).toLocaleString()}
+                      </span>
+                      {item.originalAmount && item.originalAmount > item.amount && (
+                        <div className="text-[10px] text-slate-500 line-through">
+                          Original: {currencySymbol}{item.originalAmount}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      {/* Partial Settlement Button (Rule 9) */}
+                      {!isSettled && (
+                        <button
+                          onClick={() => openPartialModal(item)}
+                          className="px-2.5 py-1.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 text-xs font-semibold flex items-center gap-1 transition-colors"
+                          title="Record Partial Payment"
+                        >
+                          <Split className="w-3.5 h-3.5" /> Settle Part
+                        </button>
+                      )}
+
+                      <button
+                        onClick={() => openEditModal(item)}
+                        className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition-colors"
+                        title="Edit Record"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          if (window.confirm(`Delete record "${item.title}"?`)) {
+                            onDeleteOweDue(item.id);
+                          }
+                        }}
+                        className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-colors"
+                        title="Delete Record"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Add / Edit Owe-Due Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-2xl glass-modal p-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <ArrowLeftRight className="w-5 h-5 text-purple-400" />
+                {editingItem ? 'Edit Financial Record' : 'Create Owe / Due Record'}
+              </h3>
+              <button onClick={closeModal} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+              {/* Type selector */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                  Record Type *
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, type: 'due' })}
+                    className={`p-3 rounded-xl border text-left font-semibold text-xs transition-all flex items-center gap-2 ${
+                      formData.type === 'due'
+                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300 shadow-sm'
+                        : 'bg-slate-900 border-slate-800 text-slate-400'
+                    }`}
+                  >
+                    <ArrowDownLeft className="w-4 h-4 text-emerald-400" />
+                    Due (They owe me)
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, type: 'owe' })}
+                    className={`p-3 rounded-xl border text-left font-semibold text-xs transition-all flex items-center gap-2 ${
+                      formData.type === 'owe'
+                        ? 'bg-rose-500/20 border-rose-500 text-rose-300 shadow-sm'
+                        : 'bg-slate-900 border-slate-800 text-slate-400'
+                    }`}
+                  >
+                    <ArrowUpRight className="w-4 h-4 text-rose-400" />
+                    Owe (I owe them)
+                  </button>
+                </div>
+              </div>
+
+              {/* Title */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                  Description / Reason *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Lent cash for auto rickshaw, borrowed semester notes fee"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-purple-500 transition-colors"
+                />
+              </div>
+
+              {/* Amount & Date */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                    Amount ({currencySymbol}) *
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    required
+                    min="0.01"
+                    placeholder="0.00"
+                    value={formData.amount}
+                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-purple-500 transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                    Date *
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={formData.date}
+                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-purple-500 transition-colors"
+                  />
+                </div>
+              </div>
+
+              {/* Person Selector */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                  Person (Identified by Unique 4-Digit ID) *
+                </label>
+                <select
+                  required
+                  value={formData.personId}
+                  onChange={(e) => setFormData({ ...formData, personId: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-purple-500 transition-colors"
+                >
+                  <option value="">-- Select Person --</option>
+                  {people.map(p => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} (#{p.id}) {p.phone ? `(${p.phone})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-sm font-semibold shadow-lg transition-all"
+                >
+                  {editingItem ? 'Save Changes' : 'Save Record'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Partial Settlement Modal (Rule 9) */}
+      {isPartialModalOpen && partialTargetItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl glass-modal p-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <Split className="w-5 h-5 text-indigo-400" />
+                Record Partial Settlement
+              </h3>
+              <button onClick={closePartialModal} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handlePartialSubmit} className="mt-4 space-y-4">
+              <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 text-xs space-y-1">
+                <div className="text-slate-400">Current Outstanding:</div>
+                <div className="text-xl font-bold text-white">
+                  {currencySymbol} {partialTargetItem.amount.toLocaleString()}
+                </div>
+                <div className="text-slate-400 mt-1">
+                  For: <span className="text-white font-semibold">{partialTargetItem.title}</span> ({partialTargetItem.personName})
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                  Amount Received / Paid Now ({currencySymbol}) *
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  required
+                  min="0.01"
+                  max={partialTargetItem.amount - 0.01}
+                  placeholder="e.g. 200"
+                  value={partialAmount}
+                  onChange={(e) => setPartialAmount(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-indigo-500 transition-colors"
+                />
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Rule 9: {currencySymbol}{partialAmount || 0} will be marked as settled, and {currencySymbol}{Math.max(0, (partialTargetItem.amount - (parseFloat(partialAmount) || 0))).toFixed(2)} will remain In Process.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={closePartialModal}
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold shadow-lg transition-all"
+                >
+                  Confirm Partial Settlement
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
