@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   LayoutDashboard,
   Receipt,
@@ -6,16 +6,11 @@ import {
   ArrowLeftRight,
   Contact,
   Archive,
-  Settings,
   Plus,
-  Sparkles,
   Bell,
   LogOut,
-  UserCheck,
-  ShieldCheck,
   Sun,
-  Moon,
-  MoreHorizontal
+  Moon
 } from 'lucide-react';
 
 export default function Navbar({
@@ -31,8 +26,6 @@ export default function Navbar({
   onToggleTheme,
   onLockVault
 }) {
-  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
-
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'personal', label: 'Personal Expenses', icon: Receipt },
@@ -45,8 +38,7 @@ export default function Navbar({
   const userInitial = userName ? userName.trim().charAt(0).toUpperCase() : 'E';
 
   return (
-    <>
-      <header className="w-full border-b border-slate-800/80 bg-slate-950/85 backdrop-blur-xl sticky top-0 z-40 transition-colors duration-280">
+    <header className="w-full border-b border-slate-800/80 bg-slate-950/85 backdrop-blur-xl sticky top-0 z-40 transition-colors duration-280">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 sm:h-16 gap-2 sm:gap-3">
             {/* User Profile Banner Button -> Redirects to Settings */}
@@ -171,139 +163,6 @@ export default function Navbar({
           </div>
         </div>
       </header>
-
-      {/* Mobile Bottom App Dock (Visible on Mobile Screens only: md:hidden) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/92 backdrop-blur-2xl border-t border-slate-800/80 px-2 pt-1 pb-safe shadow-[0_-8px_30px_rgba(0,0,0,0.4)]">
-        <div className="flex items-center justify-around max-w-lg mx-auto relative">
-          {/* Dashboard */}
-          <button
-            onClick={() => {
-              setActiveTab('dashboard');
-              setIsMoreMenuOpen(false);
-            }}
-            className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all cursor-pointer min-w-[54px] ${
-              activeTab === 'dashboard' ? 'text-indigo-400' : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <LayoutDashboard className={`w-5 h-5 transition-transform ${activeTab === 'dashboard' ? 'scale-110 text-indigo-400' : ''}`} />
-            <span className="text-[10px] font-semibold mt-0.5">Home</span>
-          </button>
-
-          {/* Personal */}
-          <button
-            onClick={() => {
-              setActiveTab('personal');
-              setIsMoreMenuOpen(false);
-            }}
-            className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all cursor-pointer min-w-[54px] ${
-              activeTab === 'personal' ? 'text-indigo-400' : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <Receipt className={`w-5 h-5 transition-transform ${activeTab === 'personal' ? 'scale-110 text-indigo-400' : ''}`} />
-            <span className="text-[10px] font-semibold mt-0.5">Personal</span>
-          </button>
-
-          {/* Floating Center Quick Add Button */}
-          <div className="relative -mt-6 flex flex-col items-center">
-            <button
-              onClick={onOpenQuickAdd}
-              className="w-13 h-13 rounded-full bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-lg shadow-indigo-600/40 border-4 border-slate-950 active:scale-95 transition-all duration-150 cursor-pointer"
-              title="Quick Add Expense"
-              aria-label="Quick Add"
-            >
-              <Plus className="w-6 h-6 stroke-[2.5]" />
-            </button>
-            <span className="text-[9px] font-bold text-slate-300 mt-0.5">Add</span>
-          </div>
-
-          {/* Shared */}
-          <button
-            onClick={() => {
-              setActiveTab('shared');
-              setIsMoreMenuOpen(false);
-            }}
-            className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all cursor-pointer min-w-[54px] ${
-              activeTab === 'shared' ? 'text-indigo-400' : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <Users className={`w-5 h-5 transition-transform ${activeTab === 'shared' ? 'scale-110 text-indigo-400' : ''}`} />
-            <span className="text-[10px] font-semibold mt-0.5">Split</span>
-          </button>
-
-          {/* Owes & Dues */}
-          <button
-            onClick={() => {
-              setActiveTab('owes_dues');
-              setIsMoreMenuOpen(false);
-            }}
-            className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all cursor-pointer min-w-[54px] ${
-              activeTab === 'owes_dues' ? 'text-indigo-400' : 'text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <ArrowLeftRight className={`w-5 h-5 transition-transform ${activeTab === 'owes_dues' ? 'scale-110 text-indigo-400' : ''}`} />
-            <span className="text-[10px] font-semibold mt-0.5">Dues</span>
-          </button>
-
-          {/* More Menu Trigger */}
-          <div className="relative">
-            <button
-              onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)}
-              className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all cursor-pointer min-w-[50px] ${
-                activeTab === 'people' || activeTab === 'archive' || activeTab === 'settings' || isMoreMenuOpen
-                  ? 'text-indigo-400'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-              title="More Features"
-            >
-              <MoreHorizontal className="w-5 h-5" />
-              <span className="text-[10px] font-semibold mt-0.5">More</span>
-            </button>
-
-            {/* Popup Menu for People, Archive, Settings */}
-            {isMoreMenuOpen && (
-              <div className="absolute bottom-14 right-0 w-48 rounded-2xl glass-modal p-2 shadow-2xl border border-slate-800 animate-in fade-in slide-in-from-bottom-2 duration-150 z-50">
-                <button
-                  onClick={() => {
-                    setActiveTab('people');
-                    setIsMoreMenuOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-left transition-colors ${
-                    activeTab === 'people' ? 'bg-indigo-600 text-white' : 'text-slate-300 hover:bg-slate-800'
-                  }`}
-                >
-                  <Contact className="w-4 h-4" />
-                  <span>People Directory</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setActiveTab('archive');
-                    setIsMoreMenuOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-left transition-colors ${
-                    activeTab === 'archive' ? 'bg-indigo-600 text-white' : 'text-slate-300 hover:bg-slate-800'
-                  }`}
-                >
-                  <Archive className="w-4 h-4" />
-                  <span>Annual Archive</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setActiveTab('settings');
-                    setIsMoreMenuOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-left transition-colors ${
-                    activeTab === 'settings' ? 'bg-indigo-600 text-white' : 'text-slate-300 hover:bg-slate-800'
-                  }`}
-                >
-                  <Settings className="w-4 h-4" />
-                  <span>Settings & Profile</span>
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </nav>
-    </>
   );
 }
 
