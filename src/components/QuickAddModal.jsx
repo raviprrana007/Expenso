@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { CATEGORIES, PAYMENT_MODES } from '../types/constants';
 import { StorageService } from '../services/storage';
+import Modal from './Modal';
 
 export default function QuickAddModal({
   isOpen,
@@ -166,9 +167,10 @@ export default function QuickAddModal({
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto modal-overlay">
-      <div className="w-full max-w-lg rounded-t-3xl sm:rounded-3xl glass-modal p-5 sm:p-7 shadow-2xl relative modal-sheet max-h-[92vh] sm:max-h-[90vh] overflow-y-auto border-t sm:border border-slate-800/80 pb-safe">
+    <Modal isOpen={isOpen} onClose={onClose} maxWidth="max-w-lg" className="p-5 sm:p-7 sm:rounded-3xl pb-safe">
         {/* Mobile Drag Indicator */}
         <div className="w-12 h-1.5 bg-slate-700/60 rounded-full mx-auto mb-3.5 sm:hidden" />
 
@@ -553,7 +555,6 @@ export default function QuickAddModal({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </Modal>
   );
 }

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { StorageService } from '../services/storage';
 import { BudgetCalculator } from '../services/budgetCalculator';
+import Modal from './Modal';
 
 export default function PersonDirectory({
   people,
@@ -278,8 +279,7 @@ export default function PersonDirectory({
 
       {/* Add / Edit Person Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/80 backdrop-blur-sm modal-overlay">
-          <div className="w-full max-w-md rounded-t-3xl sm:rounded-2xl glass-modal p-5 sm:p-6 shadow-2xl relative modal-sheet border-t sm:border border-slate-800 pb-safe max-h-[92vh] sm:max-h-[90vh] overflow-y-auto">
+        <Modal isOpen={isModalOpen} onClose={closeModal} maxWidth="max-w-md" className="pb-safe">
             <div className="w-12 h-1.5 bg-slate-700/60 rounded-full mx-auto mb-4 sm:hidden" />
             <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-800">
               <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
@@ -382,8 +382,7 @@ export default function PersonDirectory({
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+      </Modal>
       )}
     </div>
   );

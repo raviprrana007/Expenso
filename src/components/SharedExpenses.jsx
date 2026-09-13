@@ -13,6 +13,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { StorageService } from '../services/storage';
+import Modal from './Modal';
 
 export default function SharedExpenses({
   sharedExpenses,
@@ -333,8 +334,7 @@ export default function SharedExpenses({
 
       {/* Add / Edit Shared Expense Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto modal-overlay">
-          <div className="w-full max-w-2xl rounded-t-3xl sm:rounded-2xl glass-modal p-5 sm:p-6 shadow-2xl relative sm:my-8 modal-sheet max-h-[92vh] overflow-y-auto border border-slate-800">
+        <Modal isOpen={isModalOpen} onClose={closeModal} maxWidth="max-w-2xl">
             {/* Mobile Drag Indicator Pill */}
             <div className="w-12 h-1 bg-slate-700 rounded-full mx-auto mb-3 sm:hidden" />
 
@@ -566,8 +566,7 @@ export default function SharedExpenses({
                 </button>
               </div>
             </form>
-          </div>
-        </div>
+      </Modal>
       )}
     </div>
   );

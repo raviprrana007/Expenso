@@ -85,24 +85,82 @@ html.theme-switching * {
 }
 
 /* --------------------------------------------------------------------------
-   Custom Scrollbar
+   Universal Modern Scrollbar System (No Clunky Windows Stepper Arrow Buttons)
    -------------------------------------------------------------------------- */
-::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
 }
-::-webkit-scrollbar-track {
+
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+/* Eliminate ugly Windows scrollbar stepper buttons/arrows */
+::-webkit-scrollbar-button,
+*::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-track:hover,
+*::-webkit-scrollbar-track:hover {
   background: var(--scrollbar-track);
+  border-radius: 9999px;
 }
-::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb);
-  border-radius: var(--radius-full);
-  border: 2px solid transparent;
+
+::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover,
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--primary);
   background-clip: padding-box;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--primary) 50%, transparent);
+
+::-webkit-scrollbar-corner,
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 9999px;
+  border: 1px solid transparent;
   background-clip: padding-box;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--primary);
 }
 
 /* --------------------------------------------------------------------------
@@ -172,23 +230,35 @@ button, a, input, select, textarea, [role="button"] {
   padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
 }
 
-@keyframes sheetSlideUp {
-  from {
+@keyframes modalDesktopEnter {
+  0% {
     opacity: 0;
-    transform: translateY(24px) scale(0.98);
+    transform: scale(0.96) translateY(12px);
   }
-  to {
+  100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modalMobileSheetSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
 .modal-sheet {
-  animation: sheetSlideUp 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: modalDesktopEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @media (max-width: 639px) {
   .modal-sheet {
+    animation: modalMobileSheetSlide 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
     border-bottom-left-radius: 0 !important;
     border-bottom-right-radius: 0 !important;
     border-top-left-radius: 1.5rem !important;
@@ -347,10 +417,6 @@ input[type='checkbox']:active {
 
 .modal-overlay {
   animation: ui-fade var(--duration-base) var(--ease-out) both;
-}
-
-.modal-sheet {
-  animation: ui-sheet-spring 360ms var(--ease-spring) both;
 }
 
 /* Staggered entry for grids, transaction lists, and cards */
