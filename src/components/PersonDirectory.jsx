@@ -5,14 +5,10 @@ import {
   Search, 
   Phone, 
   MessageSquare, 
-  ShieldCheck, 
   Sparkles, 
   X, 
   Edit3, 
   Trash2, 
-  ArrowDownLeft, 
-  ArrowUpRight, 
-  CheckCircle2,
   AlertTriangle
 } from 'lucide-react';
 import { StorageService } from '../services/storage';
@@ -110,7 +106,6 @@ export default function PersonDirectory({
         createdAt: new Date().toISOString()
       });
     } else {
-      // Editing person (Note: Rule 11 specifies ID cannot be edited after assignment!)
       onUpdatePerson({
         ...editingPerson,
         name: name.trim(),
@@ -133,8 +128,8 @@ export default function PersonDirectory({
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl glass-panel">
         <div>
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-sm">
               <Contact className="w-5 h-5" />
             </div>
             <h1 className="text-xl font-bold text-white tracking-tight">People & 4-Digit Directory</h1>
@@ -146,7 +141,7 @@ export default function PersonDirectory({
 
         <button
           onClick={openAddModal}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-sm shadow-lg shadow-indigo-500/25 transition-all"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-xs sm:text-sm shadow-md shadow-indigo-600/30 transition-all duration-200 hover:scale-[1.02] active:scale-[0.97] cursor-pointer btn-shimmer btn-press"
         >
           <Plus className="w-4 h-4" /> Add New Person
         </button>
@@ -155,18 +150,18 @@ export default function PersonDirectory({
       {/* Search Bar */}
       <div className="p-4 rounded-2xl glass-panel flex items-center justify-between gap-4">
         <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
             placeholder="Search by name, 4-digit ID, or phone..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500 transition-colors"
+            className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:border-indigo-500 transition-colors font-medium"
           />
         </div>
 
         <div className="text-xs text-slate-400 hidden sm:block">
-          Total Registered: <strong className="text-white">{people.length} People</strong>
+          Total Registered: <strong className="text-white tabular-nums font-bold">{people.length} People</strong>
         </div>
       </div>
 
@@ -180,13 +175,13 @@ export default function PersonDirectory({
           </p>
           <button
             onClick={openAddModal}
-            className="mt-5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md inline-flex items-center gap-1.5 transition-all"
+            className="mt-5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md inline-flex items-center gap-1.5 transition-all cursor-pointer btn-press"
           >
             <Plus className="w-4 h-4" /> Add Person Now
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 stagger-items">
           {filteredPeople.map(person => {
             const personNet = summary.personNetList.find(p => String(p.id) === String(person.id));
             const netVal = personNet ? personNet.net : 0;
@@ -202,16 +197,16 @@ export default function PersonDirectory({
                   {/* Top row: Avatar + Name + 4-digit ID pill */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-slate-800 to-slate-700 border border-slate-600/50 flex items-center justify-center font-bold text-white text-base">
+                      <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-slate-800 to-slate-700 border border-slate-600/50 flex items-center justify-center font-bold text-white text-base shadow-sm">
                         {person.name.charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <h4 className="font-bold text-white text-base">{person.name}</h4>
+                        <h4 className="font-bold text-white text-base tracking-tight">{person.name}</h4>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                             #{person.id}
                           </span>
-                          <span className="text-[10px] text-slate-500">Unique ID</span>
+                          <span className="text-[10px] text-slate-500 font-medium">Unique ID</span>
                         </div>
                       </div>
                     </div>
@@ -219,7 +214,7 @@ export default function PersonDirectory({
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => openEditModal(person)}
-                        className="p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition-colors"
+                        className="p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer active:scale-90"
                         title="Edit Details"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
@@ -230,7 +225,7 @@ export default function PersonDirectory({
                             onDeletePerson(person.id);
                           }
                         }}
-                        className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-colors"
+                        className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-colors cursor-pointer active:scale-90"
                         title="Delete Person"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -242,7 +237,7 @@ export default function PersonDirectory({
                   {person.phone && (
                     <div className="mt-3 flex items-center gap-2 text-xs text-slate-400">
                       <Phone className="w-3.5 h-3.5 text-slate-500" />
-                      <span>{person.phone}</span>
+                      <span className="tabular-nums">{person.phone}</span>
                     </div>
                   )}
                 </div>
@@ -253,10 +248,10 @@ export default function PersonDirectory({
                     <span className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider block">
                       Net Balance
                     </span>
-                    <span className={`text-sm font-black ${
+                    <span className={`text-sm font-black tabular-nums ${
                       hasDue ? 'text-emerald-400' : hasOwe ? 'text-rose-400' : 'text-slate-400'
                     }`}>
-                      {hasDue ? `+${currencySymbol}${netVal.toLocaleString()}` : hasOwe ? `-${currencySymbol}${Math.abs(netVal).toLocaleString()}` : 'Settled (₹0)'}
+                      {hasDue ? `+${currencySymbol}${netVal.toLocaleString()}` : hasOwe ? `-${currencySymbol}${Math.abs(netVal).toLocaleString()}` : `Settled (${currencySymbol}0)`}
                     </span>
                   </div>
 
@@ -266,7 +261,7 @@ export default function PersonDirectory({
                         href={`https://wa.me/${person.phone.replace(/[^0-9]/g, '')}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-xs font-semibold flex items-center gap-1 transition-colors"
+                        className="px-2.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
                         title="WhatsApp Contact"
                       >
                         <MessageSquare className="w-3.5 h-3.5" /> WhatsApp
@@ -282,14 +277,14 @@ export default function PersonDirectory({
 
       {/* Add / Edit Person Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl glass-modal p-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm modal-overlay">
+          <div className="w-full max-w-md rounded-2xl glass-modal p-6 shadow-2xl relative modal-sheet border border-slate-800">
             <div className="flex items-center justify-between pb-4 border-b border-slate-800">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
                 <Contact className="w-5 h-5 text-indigo-400" />
                 {editingPerson ? 'Edit Person' : 'Register New Person'}
               </h3>
-              <button onClick={closeModal} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+              <button onClick={closeModal} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -306,11 +301,11 @@ export default function PersonDirectory({
                   placeholder="e.g. Ravi Kumar"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500 transition-colors"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500 transition-colors font-medium"
                 />
               </div>
 
-              {/* Unique 4-Digit ID (Rule 11) */}
+              {/* Unique 4-Digit ID */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
@@ -320,7 +315,7 @@ export default function PersonDirectory({
                     <button
                       type="button"
                       onClick={handleRegenerateId}
-                      className="text-[11px] text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1"
+                      className="text-[11px] text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 cursor-pointer"
                     >
                       <Sparkles className="w-3 h-3" /> Suggest Another ID
                     </button>
@@ -348,7 +343,7 @@ export default function PersonDirectory({
                   </p>
                 ) : (
                   <p className="text-[11px] text-slate-400 mt-1">
-                    {editingPerson ? 'Rule 11: ID cannot be modified after creation.' : 'Rule 11: Unique 4-digit identifier for suggestions & tracking.'}
+                    {editingPerson ? 'ID cannot be modified after creation.' : 'Unique 4-digit identifier for quick tagging and tracking.'}
                   </p>
                 )}
               </div>
@@ -372,14 +367,14 @@ export default function PersonDirectory({
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold transition-colors"
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold transition-colors cursor-pointer active:scale-95"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={!editingPerson && (customId.length !== 4 || !!idError)}
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold shadow-lg transition-all"
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs sm:text-sm font-semibold shadow-lg shadow-indigo-600/30 transition-all cursor-pointer active:scale-95"
                 >
                   {editingPerson ? 'Save Changes' : 'Create Person'}
                 </button>

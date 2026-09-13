@@ -5,15 +5,12 @@ import {
   Trash2, 
   Edit3, 
   Calendar, 
-  MapPin, 
-  DollarSign, 
-  CheckCircle2, 
   X, 
   UserCheck, 
   UserPlus, 
-  ArrowRight, 
   Sparkles,
-  Layers
+  Layers,
+  CheckCircle2
 } from 'lucide-react';
 import { StorageService } from '../services/storage';
 
@@ -39,7 +36,6 @@ export default function SharedExpenses({
   const [splitMode, setSplitMode] = useState('equal'); // 'equal' or 'custom'
   
   // Selected participants (list of { id, name, phone, shareAmount })
-  // 'user' is always included as self
   const [participants, setParticipants] = useState([
     { id: 'user', name: 'You (Myself)', shareAmount: 0 }
   ]);
@@ -148,28 +144,44 @@ export default function SharedExpenses({
       return;
     }
 
-    if (splitMode === 'custom') {
-      const sumShares = currentParticipantShares.reduce((acc, p) => acc + p.share, 0);
-      if (Math.abs(sumShares - parsedTotal) > 0.05) {
-        alert(`The sum of individual shares (${currencySymbol}${sumShares}) must equal the total amount (${currencySymbol}${parsedTotal}).`);
-        return;
+    let finalShares = [];
+    if (splitMode === 'equal') {
+      finalShares = participants.map(p => ({
+        ...p,
+        share: parseFloat(equalSharePerPerson.toFixed(2))
+      }));
+    } else {
+      const sumShares = participants.reduce((acc, p) => acc + (parseFloat(p.shareAmount) || 0), 0);
+      if (Math.abs(sumShares - parsedTotal) > 1.0) {
+        if (!window.confirm(`Warning: The sum of individual shares (${currencySymbol}${sumShares}) does not match the total bill (${currencySymbol}${parsedTotal}). Proceed anyway?`)) {
+          return;
+        }
       }
+      finalShares = participants.map(p => ({
+        ...p,
+        share: parseFloat(p.shareAmount) || 0
+      }));
     }
 
-    const payload = {
+    const payerObj = people.find(p => p.id === payerId);
+    const payerName = payerId === 'user' ? 'You (Myself)' : (payerObj ? payerObj.name : 'Unknown');
+
+    const calculatedUserShare = finalShares.find(p => p.id === 'user')?.share || 0;
+
+    const expenseRecord = {
       id: editingExpense ? editingExpense.id : `se_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       title: title.trim(),
       date,
       totalAmount: parsedTotal,
       payerId,
-      payerName: payerId === 'user' ? 'You' : (people.find(p => p.id === payerId)?.name || `Person #${payerId}`),
+      payerName,
       splitMode,
-      participants: currentParticipantShares,
-      userShare,
-      createdAt: editingExpense?.createdAt || new Date().toISOString()
+      participants: finalShares,
+      userShare: calculatedUserShare,
+      createdAt: editingExpense ? editingExpense.createdAt : new Date().toISOString()
     };
 
-    onSaveSharedExpense(payload);
+    onSaveSharedExpense(expenseRecord);
     closeModal();
   };
 
@@ -178,20 +190,20 @@ export default function SharedExpenses({
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl glass-panel">
         <div>
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-sm">
               <Users className="w-5 h-5" />
             </div>
             <h1 className="text-xl font-bold text-white tracking-tight">Shared Expenses</h1>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            Split group meals, trips, or hostel bills. Automatically updates your personal budget and generates Dues & Owes.
+            Split group meals, trips, or flat bills. Automatically updates your personal budget and generates Dues & Owes.
           </p>
         </div>
 
         <button
           onClick={openAddModal}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold text-sm shadow-lg shadow-purple-500/25 transition-all"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-indigo-500 hover:from-purple-500 hover:to-indigo-400 text-white font-semibold text-xs sm:text-sm shadow-md shadow-purple-600/30 transition-all duration-200 hover:scale-[1.02] active:scale-[0.97] cursor-pointer btn-shimmer btn-press"
         >
           <Plus className="w-4 h-4" /> Create Shared Expense
         </button>
@@ -207,13 +219,13 @@ export default function SharedExpenses({
           </p>
           <button
             onClick={openAddModal}
-            className="mt-5 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold shadow-md inline-flex items-center gap-1.5 transition-all"
+            className="mt-5 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold shadow-md inline-flex items-center gap-1.5 transition-all cursor-pointer btn-press"
           >
             <Plus className="w-4 h-4" /> Split Your First Bill
           </button>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4 stagger-items">
           {sharedExpenses.map(expense => {
             const isUserPayer = expense.payerId === 'user';
             return (
@@ -224,13 +236,13 @@ export default function SharedExpenses({
                 {/* Header row */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
                   <div className="flex items-center gap-3">
-                    <div className="p-3 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                    <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-sm">
                       <Users className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="text-lg font-bold text-white">{expense.title}</h4>
-                      <div className="flex items-center gap-3 text-xs text-slate-400 mt-0.5">
-                        <span className="flex items-center gap-1">
+                      <h4 className="text-lg font-bold text-white tracking-tight">{expense.title}</h4>
+                      <div className="flex items-center gap-2.5 text-xs text-slate-400 mt-0.5">
+                        <span className="flex items-center gap-1 tabular-nums">
                           <Calendar className="w-3.5 h-3.5 text-slate-500" /> {expense.date}
                         </span>
                         <span>•</span>
@@ -245,8 +257,8 @@ export default function SharedExpenses({
 
                   <div className="flex items-center justify-between sm:justify-end gap-4">
                     <div className="text-left sm:text-right">
-                      <div className="text-xs text-slate-400">Total Bill</div>
-                      <div className="text-lg font-black text-white">
+                      <div className="text-xs text-slate-400 font-medium">Total Bill</div>
+                      <div className="text-lg font-black text-white tabular-nums">
                         {currencySymbol} {expense.totalAmount.toLocaleString()}
                       </div>
                     </div>
@@ -254,7 +266,7 @@ export default function SharedExpenses({
                     <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => openEditModal(expense)}
-                        className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition-colors"
+                        className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer active:scale-90"
                         title="Edit Shared Expense"
                       >
                         <Edit3 className="w-4 h-4" />
@@ -265,7 +277,7 @@ export default function SharedExpenses({
                             onDeleteSharedExpense(expense.id);
                           }
                         }}
-                        className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-colors"
+                        className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-colors cursor-pointer active:scale-90"
                         title="Delete Shared Expense"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -275,22 +287,22 @@ export default function SharedExpenses({
                 </div>
 
                 {/* Workflow effect callout */}
-                <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-xs">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-slate-300">Personal Expense Share:</span>
-                    <span className="font-bold text-indigo-400">
+                    <span className="font-bold text-indigo-400 tabular-nums">
                       {currencySymbol} {expense.userShare.toLocaleString()}
                     </span>
-                    <span className="text-slate-500">(Deducted from Monthly Spending Limit)</span>
+                    <span className="text-slate-500 hidden sm:inline">(Deducted from Monthly Spending Limit)</span>
                   </div>
 
                   <div>
                     {isUserPayer ? (
-                      <span className="text-emerald-400 font-medium">
+                      <span className="text-emerald-400 font-semibold tabular-nums">
                         Generated Dues: {currencySymbol} {(expense.totalAmount - expense.userShare).toLocaleString()} from {expense.participants.length - 1} friend(s)
                       </span>
                     ) : (
-                      <span className="text-rose-400 font-medium">
+                      <span className="text-rose-400 font-semibold tabular-nums">
                         Generated Owe: {currencySymbol} {expense.userShare.toLocaleString()} payable to {expense.payerName}
                       </span>
                     )}
@@ -301,19 +313,16 @@ export default function SharedExpenses({
                 <div>
                   <h5 className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Participant Breakdown</h5>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                    {expense.participants.map(p => {
-                      const isSelf = p.id === 'user';
-                      return (
-                        <div key={p.id} className="p-2.5 rounded-xl bg-slate-900/40 border border-slate-800/80 flex items-center justify-between text-xs">
-                          <span className="text-slate-300 font-medium truncate">
-                            {p.name} {p.id !== 'user' && <span className="text-slate-500 text-[10px]">#{p.id}</span>}
-                          </span>
-                          <span className="font-bold text-white">
-                            {currencySymbol} {p.share.toLocaleString()}
-                          </span>
-                        </div>
-                      );
-                    })}
+                    {expense.participants.map(p => (
+                      <div key={p.id} className="p-2.5 rounded-xl bg-slate-900/40 border border-slate-800/80 flex items-center justify-between text-xs">
+                        <span className="text-slate-300 font-medium truncate">
+                          {p.name} {p.id !== 'user' && <span className="text-slate-500 text-[10px] font-mono">#{p.id}</span>}
+                        </span>
+                        <span className="font-bold text-white tabular-nums">
+                          {currencySymbol} {p.share.toLocaleString()}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -324,8 +333,8 @@ export default function SharedExpenses({
 
       {/* Add / Edit Shared Expense Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
-          <div className="w-full max-w-2xl rounded-2xl glass-modal p-6 shadow-2xl relative my-8 animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto modal-overlay">
+          <div className="w-full max-w-2xl rounded-2xl glass-modal p-6 shadow-2xl relative my-8 modal-sheet border border-slate-800">
             <div className="flex items-center justify-between pb-4 border-b border-slate-800">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
                 <Users className="w-5 h-5 text-purple-400" />
@@ -333,7 +342,7 @@ export default function SharedExpenses({
               </h3>
               <button
                 onClick={closeModal}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -351,7 +360,7 @@ export default function SharedExpenses({
                   placeholder="e.g. Domino's Pizza Party, Goa Trip Fuel, Flat Wi-Fi"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-purple-500 transition-colors"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-purple-500 transition-colors font-medium"
                 />
               </div>
 
@@ -369,7 +378,7 @@ export default function SharedExpenses({
                     placeholder="0.00"
                     value={totalAmount}
                     onChange={(e) => setTotalAmount(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-purple-500 transition-colors"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-purple-500 transition-colors font-bold tabular-nums"
                   />
                 </div>
 
@@ -382,7 +391,7 @@ export default function SharedExpenses({
                     required
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-purple-500 transition-colors"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-purple-500 transition-colors tabular-nums"
                   />
                 </div>
               </div>
@@ -395,7 +404,7 @@ export default function SharedExpenses({
                 <select
                   value={payerId}
                   onChange={(e) => setPayerId(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-purple-500 transition-colors"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-purple-500 transition-colors font-medium cursor-pointer"
                 >
                   <option value="user">You (Myself)</option>
                   {people.map(p => (
@@ -413,16 +422,16 @@ export default function SharedExpenses({
 
               {/* Participants Section */}
               <div className="pt-2 border-t border-slate-800">
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-2.5">
                   <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
                     Select Participants ({participants.length})
                   </label>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center p-0.5 rounded-xl bg-slate-900 border border-slate-800">
                     <button
                       type="button"
                       onClick={() => setSplitMode('equal')}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
-                        splitMode === 'equal' ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-400'
+                      className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                        splitMode === 'equal' ? 'bg-purple-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
                       }`}
                     >
                       Equal Split
@@ -430,8 +439,8 @@ export default function SharedExpenses({
                     <button
                       type="button"
                       onClick={() => setSplitMode('custom')}
-                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
-                        splitMode === 'custom' ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-400'
+                      className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                        splitMode === 'custom' ? 'bg-purple-600 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
                       }`}
                     >
                       Custom Split
@@ -441,7 +450,7 @@ export default function SharedExpenses({
 
                 {/* Available people chips */}
                 <div className="flex flex-wrap gap-2 mb-3">
-                  <span className="px-3 py-1.5 rounded-xl bg-purple-500/20 border border-purple-500/40 text-purple-300 text-xs font-semibold flex items-center gap-1.5">
+                  <span className="px-3 py-1.5 rounded-xl bg-purple-500/20 border border-purple-500/40 text-purple-300 text-xs font-semibold flex items-center gap-1.5 shadow-sm">
                     <UserCheck className="w-3.5 h-3.5" /> You (Myself)
                   </span>
                   {people.map(person => {
@@ -451,14 +460,14 @@ export default function SharedExpenses({
                         type="button"
                         key={person.id}
                         onClick={() => handleTogglePerson(person)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-medium border flex items-center gap-1.5 transition-all ${
+                        className={`px-3 py-1.5 rounded-xl text-xs font-medium border flex items-center gap-1.5 transition-all cursor-pointer ${
                           isSelected
                             ? 'bg-indigo-600/30 border-indigo-500 text-white shadow-sm'
                             : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'
                         }`}
                       >
                         {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-indigo-400" />}
-                        {person.name} <span className="text-[10px] text-slate-500">#{person.id}</span>
+                        {person.name} <span className="text-[10px] text-slate-500 font-mono">#{person.id}</span>
                       </button>
                     );
                   })}
@@ -477,20 +486,18 @@ export default function SharedExpenses({
                       onChange={(e) => setNewPersonName(e.target.value)}
                       className="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-purple-500"
                     />
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="text"
-                        maxLength="4"
-                        placeholder="4-digit ID"
-                        value={suggestedId}
-                        onChange={(e) => setSuggestedId(e.target.value)}
-                        className="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-purple-500"
-                      />
-                    </div>
+                    <input
+                      type="text"
+                      maxLength="4"
+                      placeholder="4-digit ID"
+                      value={suggestedId}
+                      onChange={(e) => setSuggestedId(e.target.value)}
+                      className="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-purple-500 font-mono"
+                    />
                     <button
                       type="button"
                       onClick={handleCreateAndAddPerson}
-                      className="px-3 py-1.5 rounded-lg bg-purple-600/20 border border-purple-500/40 hover:bg-purple-600/30 text-purple-300 text-xs font-semibold transition-all"
+                      className="px-3 py-1.5 rounded-lg bg-purple-600/20 border border-purple-500/40 hover:bg-purple-600/30 text-purple-300 text-xs font-semibold transition-all cursor-pointer active:scale-95"
                     >
                       + Save & Add
                     </button>
@@ -517,7 +524,7 @@ export default function SharedExpenses({
                               updated[idx].shareAmount = val;
                               setParticipants(updated);
                             }}
-                            className="w-full px-2 py-1 rounded bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-purple-500"
+                            className="w-full px-2 py-1 rounded bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-purple-500 tabular-nums"
                           />
                         </div>
                       </div>
@@ -531,11 +538,11 @@ export default function SharedExpenses({
                 <div className="font-semibold text-indigo-300 flex items-center gap-1">
                   <Sparkles className="w-3.5 h-3.5" /> Real-Time Effect Preview:
                 </div>
-                <div>• Your Personal Expense will increase by: <strong className="text-white">{currencySymbol} {userShare}</strong></div>
+                <div>• Your Personal Expense will increase by: <strong className="text-white tabular-nums">{currencySymbol} {userShare}</strong></div>
                 {payerId === 'user' ? (
-                  <div>• Dues to collect from friends: <strong className="text-emerald-400">{currencySymbol} {(parsedTotal - userShare).toFixed(2)}</strong></div>
+                  <div>• Dues to collect from friends: <strong className="text-emerald-400 tabular-nums">{currencySymbol} {(parsedTotal - userShare).toFixed(2)}</strong></div>
                 ) : (
-                  <div>• Owe to pay to {people.find(p => p.id === payerId)?.name || 'Friend'}: <strong className="text-rose-400">{currencySymbol} {userShare}</strong></div>
+                  <div>• Owe to pay to {people.find(p => p.id === payerId)?.name || 'Friend'}: <strong className="text-rose-400 tabular-nums">{currencySymbol} {userShare}</strong></div>
                 )}
               </div>
 
@@ -544,13 +551,13 @@ export default function SharedExpenses({
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold transition-colors"
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold transition-colors cursor-pointer active:scale-95"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-sm font-semibold shadow-lg transition-all"
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-indigo-500 hover:from-purple-500 hover:to-indigo-400 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-purple-600/25 transition-all cursor-pointer active:scale-95"
                 >
                   {editingExpense ? 'Save Changes' : 'Record Shared Bill'}
                 </button>

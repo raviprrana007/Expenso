@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Navbar from './components/Navbar';
 import Dashboard from './components/Dashboard';
 import PersonalExpenses from './components/PersonalExpenses';
@@ -9,10 +9,14 @@ import AnnualArchive from './components/AnnualArchive';
 import SettingsBackup from './components/SettingsBackup';
 import ReminderBanner from './components/ReminderBanner';
 import QuickAddModal from './components/QuickAddModal';
+import VaultLogin from './components/VaultLogin';
 import { StorageService } from './services/storage';
 import { BudgetCalculator } from './services/budgetCalculator';
 
 export default function App() {
+  // Vault Authentication State
+  const [isVaultUnlocked, setIsVaultUnlocked] = useState(() => StorageService.hasActiveVault());
+
   // Navigation & Month Selection
   const [activeTab, setActiveTab] = useState('dashboard');
   const [selectedMonth, setSelectedMonth] = useState(() => {
@@ -32,48 +36,85 @@ export default function App() {
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [isReminderBannerOpen, setIsReminderBannerOpen] = useState(false);
 
-  // Initialize data on mount
-  useEffect(() => {
-    const loadedPeople = StorageService.getPeople();
-    const loadedTx = StorageService.getTransactions();
-    const loadedSE = StorageService.getSharedExpenses();
-    const loadedOD = StorageService.getOwesDues();
+  // Sync state from storage whenever vault is unlocked
+  const syncStateFromStorage = () => {
+    setPeople(StorageService.getPeople());
+    setTransactions(StorageService.getTransactions());
+    setSharedExpenses(StorageService.getSharedExpenses());
+    setOwesDues(StorageService.getOwesDues());
     const loadedSettings = StorageService.getSettings();
-    const loadedArchives = StorageService.getArchives();
+    setSettings(loadedSettings);
+    setArchives(StorageService.getArchives());
+    return loadedSettings;
+  };
 
-    // If initial run (no people & no transactions), pre-load student demo data
-    if (loadedPeople.length === 0 && loadedTx.length === 0) {
-      StorageService.loadSampleData();
-      setPeople(StorageService.getPeople());
-      setTransactions(StorageService.getTransactions());
-      setSharedExpenses(StorageService.getSharedExpenses());
-      setOwesDues(StorageService.getOwesDues());
-      setSettings(StorageService.getSettings());
-      setArchives(StorageService.getArchives());
-    } else {
-      setPeople(loadedPeople);
-      setTransactions(loadedTx);
-      setSharedExpenses(loadedSE);
-      setOwesDues(loadedOD);
-      setSettings(loadedSettings);
-      setArchives(loadedArchives);
-    }
-
-    // Check 9 PM daily reminder condition
-    const checkReminder = () => {
-      const now = new Date();
-      const currentHours = now.getHours();
-      const todayStr = now.toISOString().split('T')[0];
-      
-      // If reminder enabled and time is around 21:00 (9 PM) or later and not yet dismissed today
-      if (loadedSettings.reminderEnabled !== false && currentHours >= 21) {
-        if (loadedSettings.lastReminderDismissedDate !== todayStr) {
-          setIsReminderBannerOpen(true);
-        }
+  // Synchronize theme with document element (visual transition only)
+  useEffect(() => {
+    const applyTheme = () => {
+      const activeTheme = settings.theme || 'dark';
+      const root = document.documentElement;
+      if (activeTheme === 'light') {
+        root.classList.remove('dark');
+        root.classList.add('light');
+        root.style.colorScheme = 'light';
+      } else {
+        root.classList.add('dark');
+        root.classList.remove('light');
+        root.style.colorScheme = 'dark';
       }
     };
-    checkReminder();
-  }, []);
+
+    const root = document.documentElement;
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    root.classList.add('theme-switching');
+    const clearSwitching = () => {
+      window.setTimeout(() => root.classList.remove('theme-switching'), 300);
+    };
+
+    if (!prefersReduced && typeof document.startViewTransition === 'function') {
+      const transition = document.startViewTransition(applyTheme);
+      transition.finished.finally(clearSwitching);
+    } else {
+      applyTheme();
+      clearSwitching();
+    }
+  }, [settings.theme]);
+
+  const mainRef = useRef(null);
+  useEffect(() => {
+    const el = mainRef.current;
+    if (!el) return;
+    el.classList.remove('page-enter');
+    void el.offsetWidth;
+    el.classList.add('page-enter');
+  }, [activeTab]);
+
+  // Initialize data on mount
+  useEffect(() => {
+    if (isVaultUnlocked) {
+      const loadedSettings = syncStateFromStorage();
+
+      // Check 9 PM daily reminder condition
+      const checkReminder = () => {
+        const now = new Date();
+        const currentHours = now.getHours();
+        const todayStr = now.toISOString().split('T')[0];
+        
+        if (loadedSettings.reminderEnabled !== false && currentHours >= 21) {
+          if (loadedSettings.lastReminderDismissedDate !== todayStr) {
+            setIsReminderBannerOpen(true);
+          }
+        }
+      };
+      checkReminder();
+    }
+  }, [isVaultUnlocked]);
+
+  const handleToggleTheme = () => {
+    const nextTheme = settings.theme === 'light' ? 'dark' : 'light';
+    const updated = { ...settings, theme: nextTheme };
+    updateSettings(updated);
+  };
 
   // Save changes to storage
   const updateTransactions = (newTx) => {
@@ -329,6 +370,40 @@ export default function App() {
     updateTransactions(filteredTx);
   };
 
+  // --- Handlers: Vault Lifecycle ---
+  const handleCreateNewVault = (vaultData) => {
+    StorageService.createNewVault(vaultData);
+    syncStateFromStorage();
+    setIsVaultUnlocked(true);
+    setActiveTab('dashboard');
+  };
+
+  const handleImportVault = (jsonData) => {
+    StorageService.importAllData(jsonData);
+    syncStateFromStorage();
+    setIsVaultUnlocked(true);
+    setActiveTab('dashboard');
+  };
+
+  const handleQuickDemo = () => {
+    StorageService.createNewVault({
+      userName: 'College Student',
+      profession: 'Student',
+      defaultMonthlyLimit: 10000,
+      currency: 'INR',
+      currencySymbol: '₹',
+      loadDemoData: true
+    });
+    syncStateFromStorage();
+    setIsVaultUnlocked(true);
+    setActiveTab('dashboard');
+  };
+
+  const handleLockVault = () => {
+    StorageService.lockVault();
+    setIsVaultUnlocked(false);
+  };
+
   // --- Handlers: Settings, Export, Import ---
   const handleExportData = () => {
     const data = StorageService.exportAllData();
@@ -337,7 +412,7 @@ export default function App() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `Expenso_Backup_${new Date().toISOString().split('T')[0]}.json`;
+    link.download = `Expenso_Backup_${settings.userName ? settings.userName.replace(/\s+/g, '_') : 'Vault'}_${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -347,12 +422,7 @@ export default function App() {
   const handleImportData = (json) => {
     try {
       StorageService.importAllData(json);
-      setPeople(StorageService.getPeople());
-      setTransactions(StorageService.getTransactions());
-      setSharedExpenses(StorageService.getSharedExpenses());
-      setOwesDues(StorageService.getOwesDues());
-      setSettings(StorageService.getSettings());
-      setArchives(StorageService.getArchives());
+      syncStateFromStorage();
       return true;
     } catch (e) {
       throw e;
@@ -361,12 +431,7 @@ export default function App() {
 
   const handleLoadSampleData = () => {
     StorageService.loadSampleData();
-    setPeople(StorageService.getPeople());
-    setTransactions(StorageService.getTransactions());
-    setSharedExpenses(StorageService.getSharedExpenses());
-    setOwesDues(StorageService.getOwesDues());
-    setSettings(StorageService.getSettings());
-    setArchives(StorageService.getArchives());
+    syncStateFromStorage();
   };
 
   const handleClearAllData = () => {
@@ -377,6 +442,7 @@ export default function App() {
     setOwesDues([]);
     setSettings(StorageService.getSettings());
     setArchives([]);
+    setIsVaultUnlocked(false);
   };
 
   const handleDismissReminder = () => {
@@ -387,8 +453,26 @@ export default function App() {
     // Strictly Rule 4: "If user ignores the reminder, Expenso creates no transaction and does not record a 0 transaction."
   };
 
+  // If vault is locked or not yet initialized, display the Login & Onboarding screen
+  if (!isVaultUnlocked) {
+    return (
+      <VaultLogin
+        onNewVault={handleCreateNewVault}
+        onImportVault={handleImportVault}
+        onQuickDemo={handleQuickDemo}
+      />
+    );
+  }
+
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-indigo-500/40 relative overflow-x-hidden">
+      {/* Ambient background glow orbs */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10" aria-hidden="true">
+        <div className="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-indigo-500/10 blur-[120px] ambient-orb-1" />
+        <div className="absolute top-1/3 -right-40 w-96 h-96 rounded-full bg-purple-500/10 blur-[120px] ambient-orb-2" />
+        <div className="absolute -bottom-40 left-1/3 w-96 h-96 rounded-full bg-teal-500/10 blur-[120px] ambient-orb-1" />
+      </div>
+
       {/* 9:00 PM Reminder Banner (Rule 4) */}
       <ReminderBanner
         isOpen={isReminderBannerOpen}
@@ -406,94 +490,104 @@ export default function App() {
         onOpenQuickAdd={() => setIsQuickAddOpen(true)}
         currencySymbol={settings.currencySymbol || '₹'}
         reminderTriggered={isReminderBannerOpen}
+        userName={settings.userName}
+        profession={settings.profession}
+        profilePic={settings.profilePic}
+        theme={settings.theme || 'dark'}
+        onToggleTheme={handleToggleTheme}
+        onLockVault={handleLockVault}
       />
 
-      {/* Main Content Body */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        {activeTab === 'dashboard' && (
-          <Dashboard
-            selectedMonth={selectedMonth}
-            setSelectedMonth={setSelectedMonth}
-            transactions={transactions}
-            owesDues={owesDues}
-            people={people}
-            settings={settings}
-            onOpenAddPersonal={() => setIsQuickAddOpen(true)}
-            onOpenAddShared={() => setActiveTab('shared')}
-            onNavigateTab={setActiveTab}
-          />
-        )}
+      {/* Main Content Body with Smooth Spring Page Transitions */}
+      <main ref={mainRef} className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-10">
+        <div key={activeTab} className="page-enter">
+          {activeTab === 'dashboard' && (
+            <Dashboard
+              selectedMonth={selectedMonth}
+              setSelectedMonth={setSelectedMonth}
+              transactions={transactions}
+              owesDues={owesDues}
+              people={people}
+              settings={settings}
+              onOpenAddPersonal={() => setIsQuickAddOpen(true)}
+              onOpenAddShared={() => setActiveTab('shared')}
+              onNavigateTab={setActiveTab}
+              onLockVault={handleLockVault}
+            />
+          )}
 
-        {activeTab === 'personal' && (
-          <PersonalExpenses
-            transactions={transactions}
-            onAddTransaction={handleAddTransaction}
-            onUpdateTransaction={handleUpdateTransaction}
-            onDeleteTransaction={handleDeleteTransaction}
-            selectedMonth={selectedMonth}
-            setSelectedMonth={setSelectedMonth}
-            settings={settings}
-          />
-        )}
+          {activeTab === 'personal' && (
+            <PersonalExpenses
+              transactions={transactions}
+              onAddTransaction={handleAddTransaction}
+              onUpdateTransaction={handleUpdateTransaction}
+              onDeleteTransaction={handleDeleteTransaction}
+              selectedMonth={selectedMonth}
+              setSelectedMonth={setSelectedMonth}
+              settings={settings}
+            />
+          )}
 
-        {activeTab === 'shared' && (
-          <SharedExpenses
-            sharedExpenses={sharedExpenses}
-            people={people}
-            settings={settings}
-            onSaveSharedExpense={handleSaveSharedExpense}
-            onDeleteSharedExpense={handleDeleteSharedExpense}
-            onAddPerson={handleAddPerson}
-          />
-        )}
+          {activeTab === 'shared' && (
+            <SharedExpenses
+              sharedExpenses={sharedExpenses}
+              people={people}
+              settings={settings}
+              onSaveSharedExpense={handleSaveSharedExpense}
+              onDeleteSharedExpense={handleDeleteSharedExpense}
+              onAddPerson={handleAddPerson}
+            />
+          )}
 
-        {activeTab === 'owes_dues' && (
-          <OwesDues
-            owesDues={owesDues}
-            people={people}
-            settings={settings}
-            onAddOweDue={handleAddOweDue}
-            onUpdateOweDue={handleUpdateOweDue}
-            onDeleteOweDue={handleDeleteOweDue}
-            onToggleSettled={handleToggleSettled}
-            onPartialSettle={handlePartialSettle}
-            onCleanupExpiredSettled={handleCleanupExpiredSettled}
-            onAddPerson={handleAddPerson}
-          />
-        )}
+          {activeTab === 'owes_dues' && (
+            <OwesDues
+              owesDues={owesDues}
+              people={people}
+              settings={settings}
+              onAddOweDue={handleAddOweDue}
+              onUpdateOweDue={handleUpdateOweDue}
+              onDeleteOweDue={handleDeleteOweDue}
+              onToggleSettled={handleToggleSettled}
+              onPartialSettle={handlePartialSettle}
+              onCleanupExpiredSettled={handleCleanupExpiredSettled}
+              onAddPerson={handleAddPerson}
+            />
+          )}
 
-        {activeTab === 'people' && (
-          <PersonDirectory
-            people={people}
-            owesDues={owesDues}
-            settings={settings}
-            onAddPerson={handleAddPerson}
-            onUpdatePerson={handleUpdatePerson}
-            onDeletePerson={handleDeletePerson}
-          />
-        )}
+          {activeTab === 'people' && (
+            <PersonDirectory
+              people={people}
+              owesDues={owesDues}
+              settings={settings}
+              onAddPerson={handleAddPerson}
+              onUpdatePerson={handleUpdatePerson}
+              onDeletePerson={handleDeletePerson}
+            />
+          )}
 
-        {activeTab === 'archive' && (
-          <AnnualArchive
-            transactions={transactions}
-            archives={archives}
-            settings={settings}
-            onSaveArchiveRecord={handleSaveArchiveRecord}
-            onCleanupArchivedYear={handleCleanupArchivedYear}
-          />
-        )}
+          {activeTab === 'archive' && (
+            <AnnualArchive
+              transactions={transactions}
+              archives={archives}
+              settings={settings}
+              onSaveArchiveRecord={handleSaveArchiveRecord}
+              onCleanupArchivedYear={handleCleanupArchivedYear}
+            />
+          )}
 
-        {activeTab === 'settings' && (
-          <SettingsBackup
-            settings={settings}
-            onUpdateSettings={updateSettings}
-            onExportData={handleExportData}
-            onImportData={handleImportData}
-            onLoadSampleData={handleLoadSampleData}
-            onClearAllData={handleClearAllData}
-            selectedMonth={selectedMonth}
-          />
-        )}
+          {activeTab === 'settings' && (
+            <SettingsBackup
+              settings={settings}
+              onUpdateSettings={updateSettings}
+              onExportData={handleExportData}
+              onImportData={handleImportData}
+              onLoadSampleData={handleLoadSampleData}
+              onClearAllData={handleClearAllData}
+              selectedMonth={selectedMonth}
+              onLockVault={handleLockVault}
+            />
+          )}
+        </div>
       </main>
 
       {/* Global Quick Add Modal */}
@@ -505,6 +599,7 @@ export default function App() {
         onAddPersonal={handleAddTransaction}
         onAddShared={handleSaveSharedExpense}
         onAddOweDue={handleAddOweDue}
+        onAddPerson={handleAddPerson}
         onOpenSharedModal={() => {
           setActiveTab('shared');
         }}

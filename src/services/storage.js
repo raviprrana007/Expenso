@@ -97,16 +97,71 @@ export const StorageService = {
     return !people.some(p => String(p.id) === String(id));
   },
 
+  // Check if a vault is currently active
+  hasActiveVault() {
+    const settings = this.getSettings();
+    return Boolean(settings.isVaultActive && settings.userName);
+  },
+
+  // Create and initialize a brand new vault
+  createNewVault({ userName, profession, profilePic = '', defaultMonthlyLimit = 10000, currency = 'INR', currencySymbol = '₹', loadDemoData = false }) {
+    const today = new Date();
+    const currentMonthKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+    
+    const newSettings = {
+      ...DEFAULT_SETTINGS,
+      userName: userName.trim(),
+      profession: profession.trim(),
+      profilePic: profilePic || '',
+      isVaultActive: true,
+      vaultCreatedAt: new Date().toISOString(),
+      currency,
+      currencySymbol,
+      defaultMonthlyLimit: Number(defaultMonthlyLimit) || 10000,
+      monthlyLimits: {
+        [currentMonthKey]: Number(defaultMonthlyLimit) || 10000
+      }
+    };
+
+    if (loadDemoData) {
+      this.loadSampleData();
+      // Ensure custom profile settings overwrite default demo settings
+      this.saveSettings(newSettings);
+    } else {
+      this.savePeople([]);
+      this.saveTransactions([]);
+      this.saveSharedExpenses([]);
+      this.saveOwesDues([]);
+      this.saveArchives([]);
+      this.saveSettings(newSettings);
+    }
+
+    return newSettings;
+  },
+
+  // Lock / Logout of Vault
+  lockVault() {
+    const current = this.getSettings();
+    this.saveSettings({ ...current, isVaultActive: false });
+  },
+
   // Export full JSON Backup
   exportAllData() {
+    const settings = this.getSettings();
     return {
       version: '1.0',
       exportDate: new Date().toISOString(),
+      vaultProfile: {
+        userName: settings.userName || 'Expenso User',
+        profession: settings.profession || 'Member',
+        profilePic: settings.profilePic || '',
+        vaultCreatedAt: settings.vaultCreatedAt || new Date().toISOString()
+      },
       transactions: this.getTransactions(),
       sharedExpenses: this.getSharedExpenses(),
       owesDues: this.getOwesDues(),
       people: this.getPeople(),
-      settings: this.getSettings(),
+      settings: settings,
       archives: this.getArchives()
     };
   },
@@ -114,14 +169,36 @@ export const StorageService = {
   // Import JSON Backup
   importAllData(data) {
     if (!data || typeof data !== 'object') {
-      throw new Error('Invalid backup file format');
+      throw new Error('Invalid backup file format: Root must be a valid JSON object');
     }
+
+    // Merge settings & ensure vault is active on import
+    let importedSettings = { ...DEFAULT_SETTINGS };
+    if (data.settings && typeof data.settings === 'object') {
+      importedSettings = { ...importedSettings, ...data.settings };
+    }
+    
+    // Support profile from vaultProfile or settings
+    if (data.vaultProfile && typeof data.vaultProfile === 'object') {
+      if (data.vaultProfile.userName) importedSettings.userName = data.vaultProfile.userName;
+      if (data.vaultProfile.profession) importedSettings.profession = data.vaultProfile.profession;
+      if (data.vaultProfile.profilePic !== undefined) importedSettings.profilePic = data.vaultProfile.profilePic;
+      if (data.vaultProfile.vaultCreatedAt) importedSettings.vaultCreatedAt = data.vaultProfile.vaultCreatedAt;
+    }
+
+    // Always activate vault on successful import
+    importedSettings.isVaultActive = true;
+    if (!importedSettings.userName) {
+      importedSettings.userName = 'Expenso User';
+    }
+
     if (Array.isArray(data.transactions)) this.saveTransactions(data.transactions);
     if (Array.isArray(data.sharedExpenses)) this.saveSharedExpenses(data.sharedExpenses);
     if (Array.isArray(data.owesDues)) this.saveOwesDues(data.owesDues);
     if (Array.isArray(data.people)) this.savePeople(data.people);
-    if (data.settings && typeof data.settings === 'object') this.saveSettings(data.settings);
+    this.saveSettings(importedSettings);
     if (Array.isArray(data.archives)) this.saveArchives(data.archives);
+
     return true;
   },
 

@@ -1,21 +1,17 @@
 import React, { useState } from 'react';
 import { 
   Archive, 
-  FileText, 
   Download, 
   Trash2, 
   CheckCircle2, 
-  AlertCircle, 
   ShieldAlert, 
   FileCheck, 
   Clock, 
-  Calendar,
+  FileCode,
   Sparkles,
-  TrendingUp,
-  FileCode
+  TrendingUp
 } from 'lucide-react';
 import { PdfArchiveService } from '../services/pdfArchive';
-import { CATEGORIES } from '../types/constants';
 
 export default function AnnualArchive({
   transactions,
@@ -32,7 +28,6 @@ export default function AnnualArchive({
     transactions.map(tx => tx.date ? new Date(tx.date).getFullYear() : null).filter(Boolean)
   )).sort((a, b) => b - a);
 
-  // If no years found, include previous year & current year
   if (!availableYears.includes(currentYear - 1)) {
     availableYears.push(currentYear - 1);
   }
@@ -98,7 +93,7 @@ export default function AnnualArchive({
     }
   };
 
-  // Handle TXT Fallback (Rule 14 fallback)
+  // Handle TXT Fallback
   const handleGenerateTxt = () => {
     try {
       setIsGeneratingTxt(true);
@@ -124,17 +119,17 @@ export default function AnnualArchive({
     }
   };
 
-  // Handle Safe Deletion of Archived Personal Expenses (Rule 14)
+  // Handle Safe Deletion of Archived Personal Expenses
   const handleCleanup = () => {
     if (!existingArchive) {
-      alert('Rule 14 Violation: You must generate and download either the PDF or TXT archive first before deleting historical personal expenses.');
+      alert('Archive Required: You must generate and download either the PDF or TXT archive first before deleting historical personal expenses.');
       return;
     }
 
     if (window.confirm(
       `Are you sure you want to clean up ${yearTransactions.length} personal expenses for ${selectedYear}?\n\n` +
       `✓ Your generated ${existingArchive.format.toUpperCase()} archive is saved.\n` +
-      `✓ Rule 14: All Owes & Dues will remain safely untouched.`
+      `✓ All Owes & Dues will remain safely untouched.`
     )) {
       onCleanupArchivedYear(selectedYear);
       setSuccessMessage(`Archived personal expense records for ${selectedYear} cleaned up successfully.`);
@@ -146,27 +141,27 @@ export default function AnnualArchive({
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl glass-panel">
         <div>
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 shadow-sm">
               <Archive className="w-5 h-5" />
             </div>
             <h1 className="text-xl font-bold text-white tracking-tight">Annual Personal-Expense Archive</h1>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            Rules 14 & 15: Generate annual PDF summaries and safely clean up past years' personal records while keeping Owes & Dues untouched.
+            Generate annual PDF summaries and safely clean up past years' personal records while keeping Owes & Dues untouched.
           </p>
         </div>
 
         {/* Year Selector */}
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400 font-medium">Calendar Year:</span>
+          <span className="text-xs text-slate-400 font-semibold">Calendar Year:</span>
           <select
             value={selectedYear}
             onChange={(e) => {
               setSelectedYear(parseInt(e.target.value, 10));
               setSuccessMessage('');
             }}
-            className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white font-bold text-sm focus:outline-none focus:border-amber-500 transition-colors"
+            className="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white font-bold text-sm focus:outline-none focus:border-amber-500 transition-colors tabular-nums cursor-pointer"
           >
             {availableYears.map(yr => (
               <option key={yr} value={yr}>Year {yr}</option>
@@ -182,46 +177,47 @@ export default function AnnualArchive({
             <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
             {successMessage}
           </span>
-          <button onClick={() => setSuccessMessage('')} className="text-emerald-400 hover:text-emerald-200">Dismiss</button>
+          <button onClick={() => setSuccessMessage('')} className="text-emerald-400 hover:text-emerald-200 cursor-pointer">Dismiss</button>
         </div>
       )}
 
       {/* Annual Summary Box */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-5 rounded-2xl glass-panel">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 stagger-items">
+        <div className="p-5 rounded-2xl glass-panel-interactive">
           <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Year Spending</span>
-          <div className="text-2xl font-black text-white mt-2">
+          <div className="text-2xl font-black text-white mt-2 tabular-nums">
             {currencySymbol} {totalYearSpend.toLocaleString()}
           </div>
           <div className="text-[11px] text-slate-400 mt-1">
-            {yearTransactions.length} personal transactions in {selectedYear}
+            <span className="font-semibold tabular-nums text-slate-300">{yearTransactions.length}</span> personal transactions in {selectedYear}
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl glass-panel">
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Peak Expenditure Month</span>
-          <div className="text-2xl font-black text-amber-400 mt-2">
-            {monthNames[maxMonthIndex]} ({currencySymbol}{maxMonthAmount.toLocaleString()})
+        <div className="p-5 rounded-2xl glass-panel-interactive">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Peak Spending Month</span>
+          <div className="text-xl font-bold text-amber-400 mt-2 flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 flex-shrink-0" />
+            <span>{maxMonthAmount > 0 ? `${monthNames[maxMonthIndex]} (${currencySymbol}${maxMonthAmount.toLocaleString()})` : 'None'}</span>
           </div>
           <div className="text-[11px] text-slate-400 mt-1">
-            Highest spending month of {selectedYear}
+            Highest expenditure month of {selectedYear}
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl glass-panel">
+        <div className="p-5 rounded-2xl glass-panel-interactive">
           <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Archive Status</span>
-          <div className="mt-2">
+          <div className="text-base font-bold text-slate-200 mt-2 flex items-center gap-2">
             {existingArchive ? (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-bold">
-                <FileCheck className="w-3.5 h-3.5" /> Archived ({existingArchive.format.toUpperCase()})
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs">
+                <CheckCircle2 className="w-3.5 h-3.5" /> {existingArchive.format.toUpperCase()} Generated
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold">
-                <Clock className="w-3.5 h-3.5" /> Ready to Archive
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 text-xs">
+                Not Yet Archived
               </span>
             )}
           </div>
-          <div className="text-[11px] text-slate-400 mt-2">
+          <div className="text-[11px] text-slate-400 mt-1">
             {existingArchive 
               ? `Generated on ${new Date(existingArchive.generatedAt).toLocaleDateString()}` 
               : 'Download PDF or TXT before performing annual cleanup'}
@@ -232,23 +228,23 @@ export default function AnnualArchive({
       {/* Month-by-month mini bar breakdown */}
       <div className="p-5 rounded-2xl glass-panel space-y-3">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-300">Month-by-Month Overview ({selectedYear})</h3>
-        <div className="grid grid-cols-6 sm:grid-cols-12 gap-2 pt-2">
+        <div className="grid grid-cols-6 sm:grid-cols-12 gap-2 pt-2 stagger-items">
           {monthNames.map((mName, idx) => {
             const val = monthlyTotals[idx];
             const pct = maxMonthAmount > 0 ? (val / maxMonthAmount) * 100 : 0;
             return (
-              <div key={mName} className="flex flex-col items-center gap-1.5">
-                <div className="w-full h-20 bg-slate-900 rounded-lg flex items-end p-1 overflow-hidden">
+              <div key={mName} className="flex flex-col items-center gap-1.5 group">
+                <div className="w-full h-20 bg-slate-900/80 rounded-xl flex items-end p-1 overflow-hidden border border-slate-800/80 group-hover:border-indigo-500/40 transition-colors">
                   <div 
-                    className={`w-full rounded transition-all duration-500 ${
-                      idx === maxMonthIndex && val > 0 ? 'bg-amber-500' : 'bg-indigo-500'
+                    className={`w-full rounded-lg transition-all duration-700 ease-out ${
+                      idx === maxMonthIndex && val > 0 ? 'bg-amber-500 shadow-sm' : 'bg-indigo-500'
                     }`}
                     style={{ height: `${Math.max(pct, 4)}%` }}
                     title={`${mName}: ${currencySymbol}${val.toLocaleString()}`}
                   />
                 </div>
-                <span className="text-[10px] font-bold text-slate-400">{mName}</span>
-                <span className="text-[9px] text-slate-500">{val > 0 ? `${currencySymbol}${val}` : '0'}</span>
+                <span className="text-[10px] font-bold text-slate-400 group-hover:text-indigo-400 transition-colors">{mName}</span>
+                <span className="text-[9px] text-slate-500 tabular-nums">{val > 0 ? `${currencySymbol}${val.toLocaleString()}` : '0'}</span>
               </div>
             );
           })}
@@ -263,7 +259,7 @@ export default function AnnualArchive({
             Archive Actions for Calendar Year {selectedYear}
           </h3>
           <p className="text-xs text-slate-400 mt-1">
-            According to Rule 14, reports contain yearly totals, monthly breakdowns, and peak expense months. Monthly spending limits and Owes/Dues are excluded from annual personal expense reports.
+            Annual reports contain yearly totals, monthly breakdowns, and peak expense months. Monthly spending limits and Owes/Dues are excluded from personal expense reports.
           </p>
         </div>
 
@@ -272,7 +268,7 @@ export default function AnnualArchive({
           <button
             onClick={handleGeneratePdf}
             disabled={isGeneratingPdf || yearTransactions.length === 0}
-            className="p-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold text-xs flex flex-col items-center justify-center gap-2 shadow-lg transition-all"
+            className="p-4 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-50 text-white font-bold text-xs flex flex-col items-center justify-center gap-2 shadow-md shadow-indigo-600/25 transition-all cursor-pointer btn-press btn-shimmer"
           >
             <Download className="w-5 h-5" />
             <span>{isGeneratingPdf ? 'Generating PDF...' : `Generate Annual PDF (${selectedYear})`}</span>
@@ -282,9 +278,9 @@ export default function AnnualArchive({
           <button
             onClick={handleGenerateTxt}
             disabled={isGeneratingTxt || yearTransactions.length === 0}
-            className="p-4 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-200 border border-slate-700 font-bold text-xs flex flex-col items-center justify-center gap-2 transition-all"
+            className="p-4 rounded-xl bg-white dark:bg-slate-800/90 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 font-bold text-xs flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow transition-all cursor-pointer btn-press"
           >
-            <FileCode className="w-5 h-5 text-indigo-400" />
+            <FileCode className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             <span>{isGeneratingTxt ? 'Generating TXT...' : `Generate TXT Fallback (${selectedYear})`}</span>
           </button>
 
@@ -294,11 +290,11 @@ export default function AnnualArchive({
             disabled={!existingArchive || yearTransactions.length === 0}
             className={`p-4 rounded-xl font-bold text-xs flex flex-col items-center justify-center gap-2 border transition-all ${
               existingArchive && yearTransactions.length > 0
-                ? 'bg-rose-950/40 border-rose-500/40 text-rose-300 hover:bg-rose-900/50 cursor-pointer'
-                : 'bg-slate-900/40 border-slate-800 text-slate-500 cursor-not-allowed'
+                ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-500/40 text-rose-600 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/50 cursor-pointer active:scale-95 shadow-sm'
+                : 'bg-slate-100/60 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
             }`}
           >
-            <Trash2 className="w-5 h-5 text-rose-400" />
+            <Trash2 className="w-5 h-5 text-rose-500 dark:text-rose-400" />
             <span>Clean Up {selectedYear} Personal Data</span>
           </button>
         </div>
@@ -306,7 +302,7 @@ export default function AnnualArchive({
         <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 text-[11px] text-slate-400 space-y-1">
           <div className="font-semibold text-slate-300 flex items-center gap-1.5">
             <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
-            Rule 14 & 15 Safeguards:
+            Data Safeguards:
           </div>
           <div>• Previous-year personal expense data can only be cleaned up after successfully generating an archive file.</div>
           <div>• The annual cleanup strictly removes only that year's personal expenses. Unsettled Owes and Dues remain active.</div>
