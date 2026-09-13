@@ -167,16 +167,19 @@ export default function QuickAddModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto modal-overlay">
-      <div className="w-full max-w-lg rounded-3xl glass-modal p-6 sm:p-7 shadow-2xl relative modal-sheet my-8 max-h-[90vh] overflow-y-auto border border-slate-800/80">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto modal-overlay">
+      <div className="w-full max-w-lg rounded-t-3xl sm:rounded-3xl glass-modal p-5 sm:p-7 shadow-2xl relative modal-sheet max-h-[92vh] sm:max-h-[90vh] overflow-y-auto border-t sm:border border-slate-800/80 pb-safe">
+        {/* Mobile Drag Indicator */}
+        <div className="w-12 h-1.5 bg-slate-700/60 rounded-full mx-auto mb-3.5 sm:hidden" />
+
         {/* Modal Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800/80">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shadow-inner">
-              <Sparkles className="w-5 h-5" />
+        <div className="flex items-center justify-between pb-3.5 sm:pb-4 border-b border-slate-800/80">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-9 sm:w-10 h-9 sm:h-10 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shadow-inner flex-shrink-0">
+              <Sparkles className="w-4 sm:w-5 h-4 sm:h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white tracking-tight flex items-center gap-1.5">
+              <h3 className="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-1.5">
                 Quick Add Transaction
               </h3>
               <p className="text-xs text-slate-400 font-medium">Record personal expenses or peer transfers</p>
@@ -191,11 +194,11 @@ export default function QuickAddModal({
         </div>
 
         {/* Type Selector Tabs */}
-        <div className="grid grid-cols-3 gap-2 mt-5 p-1 bg-slate-900/90 rounded-2xl border border-slate-800/80">
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-2 mt-4 sm:mt-5 p-1 bg-slate-900/90 rounded-2xl border border-slate-800/80">
           <button
             type="button"
             onClick={() => setEntryType('personal')}
-            className={`py-2.5 px-2 rounded-xl text-xs font-bold flex flex-col items-center gap-1.5 transition-all cursor-pointer btn-press ${
+            className={`py-2 sm:py-2.5 px-1.5 sm:px-2 rounded-xl text-xs font-bold flex flex-col items-center gap-1 transition-all cursor-pointer btn-press ${
               entryType === 'personal'
                 ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-md shadow-indigo-600/25 border border-indigo-400/30'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
@@ -211,7 +214,7 @@ export default function QuickAddModal({
               onClose();
               onOpenSharedModal();
             }}
-            className="py-2.5 px-2 rounded-xl text-xs font-bold flex flex-col items-center gap-1.5 text-slate-400 hover:text-purple-300 hover:bg-purple-500/10 transition-all cursor-pointer btn-press group"
+            className="py-2 sm:py-2.5 px-1.5 sm:px-2 rounded-xl text-xs font-bold flex flex-col items-center gap-1 text-slate-400 hover:text-purple-300 hover:bg-purple-500/10 transition-all cursor-pointer btn-press group"
           >
             <Users className="w-4 h-4 text-purple-400 group-hover:scale-110 transition-transform" /> 
             <span>Shared Bill &rarr;</span>
@@ -220,20 +223,20 @@ export default function QuickAddModal({
           <button
             type="button"
             onClick={() => setEntryType(entryType === 'due' ? 'owe' : 'due')}
-            className={`py-2.5 px-2 rounded-xl text-xs font-bold flex flex-col items-center gap-1.5 transition-all cursor-pointer btn-press ${
+            className={`py-2 sm:py-2.5 px-1.5 sm:px-2 rounded-xl text-xs font-bold flex flex-col items-center gap-1 transition-all cursor-pointer btn-press ${
               entryType === 'due' || entryType === 'owe'
                 ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-600/25 border border-purple-400/30'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
             }`}
           >
             <ArrowLeftRight className="w-4 h-4" /> 
-            <span>{entryType === 'due' ? 'Due (They Owe)' : entryType === 'owe' ? 'Owe (You Owe)' : 'Owe / Due'}</span>
+            <span className="truncate">{entryType === 'due' ? 'Due (They Owe)' : entryType === 'owe' ? 'Owe (You Owe)' : 'Owe / Due'}</span>
           </button>
         </div>
 
         {/* Sub-type switcher if Owe/Due */}
         {(entryType === 'due' || entryType === 'owe') && (
-          <div className="grid grid-cols-2 gap-2 mt-3 p-1 bg-slate-900/80 rounded-xl border border-slate-800">
+          <div className="grid grid-cols-2 gap-2 mt-2.5 sm:mt-3 p-1 bg-slate-900/80 rounded-xl border border-slate-800">
             <button
               type="button"
               onClick={() => setEntryType('due')}
@@ -243,8 +246,8 @@ export default function QuickAddModal({
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <ArrowDownLeft className="w-3.5 h-3.5" />
-              <span>Due (They owe you)</span>
+              <ArrowDownLeft className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="truncate">Due (They owe you)</span>
             </button>
             <button
               type="button"
@@ -255,13 +258,13 @@ export default function QuickAddModal({
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <ArrowUpRight className="w-3.5 h-3.5" />
-              <span>Owe (You owe them)</span>
+              <ArrowUpRight className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="truncate">Owe (You owe them)</span>
             </button>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+        <form onSubmit={handleSubmit} className="mt-4 sm:mt-5 space-y-3.5 sm:space-y-4">
           {/* Title */}
           <div>
             <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
@@ -273,12 +276,12 @@ export default function QuickAddModal({
               placeholder="e.g. Lunch at Cafeteria, Metro recharge, Books"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all font-medium"
+              className="w-full px-3.5 sm:px-4 py-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-white placeholder-slate-500 text-base sm:text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all font-medium"
             />
           </div>
 
           {/* Amount & Date */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-3.5">
             <div>
               <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
                 Amount ({currencySymbol}) *
@@ -291,7 +294,7 @@ export default function QuickAddModal({
                 placeholder="0.00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-white text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 font-bold font-mono tabular-nums transition-all"
+                className="w-full px-3.5 sm:px-4 py-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-white text-base sm:text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 font-bold font-mono tabular-nums transition-all"
               />
             </div>
 
@@ -304,7 +307,7 @@ export default function QuickAddModal({
                 required
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-white text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 font-medium tabular-nums transition-all"
+                className="w-full px-3.5 sm:px-4 py-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-white text-base sm:text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 font-medium tabular-nums transition-all"
               />
             </div>
           </div>
@@ -344,7 +347,7 @@ export default function QuickAddModal({
                     placeholder="Enter custom mode (e.g. Crypto, Cheque, Gift Voucher)"
                     value={customPaymentMode}
                     onChange={(e) => setCustomPaymentMode(e.target.value)}
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-900/90 border border-indigo-500/50 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-900/90 border border-indigo-500/50 text-white text-base sm:text-xs placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                   />
                 </div>
               )}
@@ -397,7 +400,7 @@ export default function QuickAddModal({
                     placeholder="Enter custom category name (e.g. Gym, Pet Care, Gadgets)"
                     value={customCategory}
                     onChange={(e) => setCustomCategory(e.target.value)}
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-900/90 border border-indigo-500/50 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-900/90 border border-indigo-500/50 text-white text-base sm:text-xs placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
                   />
                 </div>
               )}
@@ -439,7 +442,7 @@ export default function QuickAddModal({
                     placeholder="Enter custom mode (e.g. Crypto, Cheque, Gift Voucher)"
                     value={customPaymentMode}
                     onChange={(e) => setCustomPaymentMode(e.target.value)}
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-900/90 border border-purple-500/50 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-900/90 border border-purple-500/50 text-white text-base sm:text-xs placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
                   />
                 </div>
               )}
@@ -459,7 +462,7 @@ export default function QuickAddModal({
                     setIsAddingNewPerson(!isAddingNewPerson);
                     if (!suggestedId) setSuggestedId(StorageService.generateUniquePersonId());
                   }}
-                  className="text-xs text-purple-400 hover:text-purple-300 font-bold inline-flex items-center gap-1 cursor-pointer transition-colors btn-press"
+                  className="text-xs text-purple-400 hover:text-purple-300 font-bold inline-flex items-center gap-1 cursor-pointer transition-colors btn-press py-0.5"
                 >
                   <UserPlus className="w-3.5 h-3.5" />
                   <span>{isAddingNewPerson ? 'Cancel' : '+ New Person'}</span>
@@ -468,7 +471,7 @@ export default function QuickAddModal({
 
               {/* Inline On-the-spot Person Add Form */}
               {isAddingNewPerson && (
-                <div className="p-3.5 mb-2.5 rounded-2xl bg-purple-950/40 border border-purple-500/30 space-y-2.5 animate-in fade-in shadow-inner">
+                <div className="p-3 sm:p-3.5 mb-2.5 rounded-2xl bg-purple-950/40 border border-purple-500/30 space-y-2.5 animate-in fade-in shadow-inner">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-bold text-purple-300 flex items-center gap-1.5">
                       <UserPlus className="w-3.5 h-3.5" /> Quick Add Person to Directory
@@ -484,21 +487,21 @@ export default function QuickAddModal({
                       placeholder="Full Name *"
                       value={newPersonName}
                       onChange={(e) => setNewPersonName(e.target.value)}
-                      className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-purple-400"
+                      className="px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white text-base sm:text-xs placeholder-slate-500 focus:outline-none focus:border-purple-400"
                     />
                     <input
                       type="tel"
                       placeholder="Phone (optional)"
                       value={newPersonPhone}
                       onChange={(e) => setNewPersonPhone(e.target.value)}
-                      className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-purple-400"
+                      className="px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white text-base sm:text-xs placeholder-slate-500 focus:outline-none focus:border-purple-400"
                     />
                   </div>
 
                   <button
                     type="button"
                     onClick={handleCreateAndSelectPerson}
-                    className="w-full py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition-colors shadow-sm cursor-pointer btn-press"
+                    className="w-full py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition-colors shadow-sm cursor-pointer btn-press"
                   >
                     Save & Select #{suggestedId}
                   </button>
@@ -509,7 +512,7 @@ export default function QuickAddModal({
                 required
                 value={personId}
                 onChange={(e) => setPersonId(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-white text-sm focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 cursor-pointer transition-all"
+                className="w-full px-3.5 sm:px-4 py-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-white text-base sm:text-sm focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 cursor-pointer transition-all font-medium"
               >
                 <option value="">-- Select Person --</option>
                 {people.map(p => (
@@ -529,22 +532,22 @@ export default function QuickAddModal({
               placeholder="Additional details / note..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-4 py-2 rounded-xl bg-slate-900/90 border border-slate-800 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 font-medium transition-all"
+              className="w-full px-3.5 sm:px-4 py-2.5 sm:py-2 rounded-xl bg-slate-900/90 border border-slate-800 text-white text-base sm:text-xs placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 font-medium transition-all"
             />
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800/80">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-3 sm:pt-4 border-t border-slate-800/80">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold transition-colors cursor-pointer btn-press"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold transition-colors cursor-pointer btn-press text-center"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-2 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs sm:text-sm font-bold shadow-lg shadow-indigo-600/30 transition-all cursor-pointer btn-press btn-shimmer"
+              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs sm:text-sm font-bold shadow-lg shadow-indigo-600/30 transition-all cursor-pointer btn-press btn-shimmer text-center min-h-[42px]"
             >
               Save Record
             </button>

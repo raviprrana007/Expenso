@@ -137,15 +137,15 @@ export default function AnnualArchive({
   };
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-4 sm:space-y-6 pb-12">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl glass-panel">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl glass-panel">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 shadow-sm">
+            <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 shadow-sm flex-shrink-0">
               <Archive className="w-5 h-5" />
             </div>
-            <h1 className="text-xl font-bold text-white tracking-tight">Annual Personal-Expense Archive</h1>
+            <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">Annual Personal-Expense Archive</h1>
           </div>
           <p className="text-xs text-slate-400 mt-1">
             Generate annual PDF summaries and safely clean up past years' personal records while keeping Owes & Dues untouched.
@@ -153,7 +153,7 @@ export default function AnnualArchive({
         </div>
 
         {/* Year Selector */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between sm:justify-start gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800/80">
           <span className="text-xs text-slate-400 font-semibold">Calendar Year:</span>
           <select
             value={selectedYear}
@@ -172,20 +172,20 @@ export default function AnnualArchive({
 
       {/* Success Banner */}
       {successMessage && (
-        <div className="p-4 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 text-xs flex items-center justify-between animate-in fade-in">
+        <div className="p-3.5 sm:p-4 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 text-xs flex items-center justify-between animate-in fade-in">
           <span className="flex items-center gap-2 font-medium">
             <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
             {successMessage}
           </span>
-          <button onClick={() => setSuccessMessage('')} className="text-emerald-400 hover:text-emerald-200 cursor-pointer">Dismiss</button>
+          <button onClick={() => setSuccessMessage('')} className="text-emerald-400 hover:text-emerald-200 cursor-pointer p-1">Dismiss</button>
         </div>
       )}
 
       {/* Annual Summary Box */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 stagger-items">
-        <div className="p-5 rounded-2xl glass-panel-interactive">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 stagger-items">
+        <div className="p-4 sm:p-5 rounded-2xl glass-panel-interactive">
           <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Total Year Spending</span>
-          <div className="text-2xl font-black text-white mt-2 tabular-nums">
+          <div className="text-xl sm:text-2xl font-black text-white mt-2 tabular-nums">
             {currencySymbol} {totalYearSpend.toLocaleString()}
           </div>
           <div className="text-[11px] text-slate-400 mt-1">
@@ -193,20 +193,20 @@ export default function AnnualArchive({
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl glass-panel-interactive">
+        <div className="p-4 sm:p-5 rounded-2xl glass-panel-interactive">
           <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Peak Spending Month</span>
-          <div className="text-xl font-bold text-amber-400 mt-2 flex items-center gap-2">
+          <div className="text-base sm:text-xl font-bold text-amber-400 mt-2 flex items-center gap-2">
             <TrendingUp className="w-5 h-5 flex-shrink-0" />
-            <span>{maxMonthAmount > 0 ? `${monthNames[maxMonthIndex]} (${currencySymbol}${maxMonthAmount.toLocaleString()})` : 'None'}</span>
+            <span className="truncate">{maxMonthAmount > 0 ? `${monthNames[maxMonthIndex]} (${currencySymbol}${maxMonthAmount.toLocaleString()})` : 'None'}</span>
           </div>
           <div className="text-[11px] text-slate-400 mt-1">
             Highest expenditure month of {selectedYear}
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl glass-panel-interactive">
+        <div className="p-4 sm:p-5 rounded-2xl glass-panel-interactive sm:col-span-2 md:col-span-1">
           <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Archive Status</span>
-          <div className="text-base font-bold text-slate-200 mt-2 flex items-center gap-2">
+          <div className="text-sm sm:text-base font-bold text-slate-200 mt-2 flex items-center gap-2">
             {existingArchive ? (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs">
                 <CheckCircle2 className="w-3.5 h-3.5" /> {existingArchive.format.toUpperCase()} Generated
@@ -226,36 +226,43 @@ export default function AnnualArchive({
       </div>
 
       {/* Month-by-month mini bar breakdown */}
-      <div className="p-5 rounded-2xl glass-panel space-y-3">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-300">Month-by-Month Overview ({selectedYear})</h3>
-        <div className="grid grid-cols-6 sm:grid-cols-12 gap-2 pt-2 stagger-items">
-          {monthNames.map((mName, idx) => {
-            const val = monthlyTotals[idx];
-            const pct = maxMonthAmount > 0 ? (val / maxMonthAmount) * 100 : 0;
-            return (
-              <div key={mName} className="flex flex-col items-center gap-1.5 group">
-                <div className="w-full h-20 bg-slate-900/80 rounded-xl flex items-end p-1 overflow-hidden border border-slate-800/80 group-hover:border-indigo-500/40 transition-colors">
-                  <div 
-                    className={`w-full rounded-lg transition-all duration-700 ease-out ${
-                      idx === maxMonthIndex && val > 0 ? 'bg-amber-500 shadow-sm' : 'bg-indigo-500'
-                    }`}
-                    style={{ height: `${Math.max(pct, 4)}%` }}
-                    title={`${mName}: ${currencySymbol}${val.toLocaleString()}`}
-                  />
+      <div className="p-4 sm:p-5 rounded-2xl glass-panel space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-300">Month-by-Month Overview ({selectedYear})</h3>
+          <span className="text-[10px] text-slate-500 sm:hidden">Swipe to explore →</span>
+        </div>
+        
+        {/* Horizontally scrollable container on mobile */}
+        <div className="overflow-x-auto scroll-touch scrollbar-none pb-2 pt-1 -mx-1 px-1">
+          <div className="min-w-[560px] sm:min-w-0 grid grid-cols-12 gap-2 stagger-items">
+            {monthNames.map((mName, idx) => {
+              const val = monthlyTotals[idx];
+              const pct = maxMonthAmount > 0 ? (val / maxMonthAmount) * 100 : 0;
+              return (
+                <div key={mName} className="flex flex-col items-center gap-1.5 group">
+                  <div className="w-full h-20 bg-slate-900/80 rounded-xl flex items-end p-1 overflow-hidden border border-slate-800/80 group-hover:border-indigo-500/40 transition-colors">
+                    <div 
+                      className={`w-full rounded-lg transition-all duration-700 ease-out ${
+                        idx === maxMonthIndex && val > 0 ? 'bg-amber-500 shadow-sm' : 'bg-indigo-500'
+                      }`}
+                      style={{ height: `${Math.max(pct, 4)}%` }}
+                      title={`${mName}: ${currencySymbol}${val.toLocaleString()}`}
+                    />
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-400 group-hover:text-indigo-400 transition-colors">{mName}</span>
+                  <span className="text-[9px] text-slate-500 tabular-nums">{val > 0 ? `${currencySymbol}${val.toLocaleString()}` : '0'}</span>
                 </div>
-                <span className="text-[10px] font-bold text-slate-400 group-hover:text-indigo-400 transition-colors">{mName}</span>
-                <span className="text-[9px] text-slate-500 tabular-nums">{val > 0 ? `${currencySymbol}${val.toLocaleString()}` : '0'}</span>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
 
       {/* Action Card: Generate Archive & Cleanup */}
-      <div className="p-6 rounded-2xl glass-panel space-y-5 border border-slate-800">
+      <div className="p-4 sm:p-6 rounded-2xl glass-panel space-y-4 sm:space-y-5 border border-slate-800">
         <div>
           <h3 className="text-base font-bold text-white flex items-center gap-2">
-            <Archive className="w-5 h-5 text-amber-400" />
+            <Archive className="w-5 h-5 text-amber-400 flex-shrink-0" />
             Archive Actions for Calendar Year {selectedYear}
           </h3>
           <p className="text-xs text-slate-400 mt-1">
@@ -263,14 +270,14 @@ export default function AnnualArchive({
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
           {/* Action 1: Download PDF */}
           <button
             onClick={handleGeneratePdf}
             disabled={isGeneratingPdf || yearTransactions.length === 0}
-            className="p-4 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-50 text-white font-bold text-xs flex flex-col items-center justify-center gap-2 shadow-md shadow-indigo-600/25 transition-all cursor-pointer btn-press btn-shimmer"
+            className="p-3.5 sm:p-4 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-50 text-white font-bold text-xs flex flex-row sm:flex-col items-center justify-center gap-2 sm:gap-2 shadow-md shadow-indigo-600/25 transition-all cursor-pointer btn-press btn-shimmer min-h-[44px]"
           >
-            <Download className="w-5 h-5" />
+            <Download className="w-4 sm:w-5 h-4 sm:h-5 flex-shrink-0" />
             <span>{isGeneratingPdf ? 'Generating PDF...' : `Generate Annual PDF (${selectedYear})`}</span>
           </button>
 
@@ -278,9 +285,9 @@ export default function AnnualArchive({
           <button
             onClick={handleGenerateTxt}
             disabled={isGeneratingTxt || yearTransactions.length === 0}
-            className="p-4 rounded-xl bg-white dark:bg-slate-800/90 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 font-bold text-xs flex flex-col items-center justify-center gap-2 shadow-sm hover:shadow transition-all cursor-pointer btn-press"
+            className="p-3.5 sm:p-4 rounded-xl bg-white dark:bg-slate-800/90 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 font-bold text-xs flex flex-row sm:flex-col items-center justify-center gap-2 sm:gap-2 shadow-sm hover:shadow transition-all cursor-pointer btn-press min-h-[44px]"
           >
-            <FileCode className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+            <FileCode className="w-4 sm:w-5 h-4 sm:h-5 text-indigo-600 dark:text-indigo-400 flex-shrink-0" />
             <span>{isGeneratingTxt ? 'Generating TXT...' : `Generate TXT Fallback (${selectedYear})`}</span>
           </button>
 
@@ -288,20 +295,20 @@ export default function AnnualArchive({
           <button
             onClick={handleCleanup}
             disabled={!existingArchive || yearTransactions.length === 0}
-            className={`p-4 rounded-xl font-bold text-xs flex flex-col items-center justify-center gap-2 border transition-all ${
+            className={`p-3.5 sm:p-4 rounded-xl font-bold text-xs flex flex-row sm:flex-col items-center justify-center gap-2 sm:gap-2 border transition-all min-h-[44px] ${
               existingArchive && yearTransactions.length > 0
                 ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-500/40 text-rose-600 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/50 cursor-pointer active:scale-95 shadow-sm'
                 : 'bg-slate-100/60 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
             }`}
           >
-            <Trash2 className="w-5 h-5 text-rose-500 dark:text-rose-400" />
+            <Trash2 className="w-4 sm:w-5 h-4 sm:h-5 text-rose-500 dark:text-rose-400 flex-shrink-0" />
             <span>Clean Up {selectedYear} Personal Data</span>
           </button>
         </div>
 
         <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 text-[11px] text-slate-400 space-y-1">
           <div className="font-semibold text-slate-300 flex items-center gap-1.5">
-            <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
+            <ShieldAlert className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
             Data Safeguards:
           </div>
           <div>• Previous-year personal expense data can only be cleaned up after successfully generating an archive file.</div>

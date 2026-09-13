@@ -186,15 +186,15 @@ export default function SharedExpenses({
   };
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-4 sm:space-y-6 pb-6 sm:pb-12">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl glass-panel">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl glass-panel">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-sm">
-              <Users className="w-5 h-5" />
+            <div className="p-2 sm:p-2.5 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-sm flex-shrink-0">
+              <Users className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <h1 className="text-xl font-bold text-white tracking-tight">Shared Expenses</h1>
+            <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">Shared Expenses</h1>
           </div>
           <p className="text-xs text-slate-400 mt-1">
             Split group meals, trips, or flat bills. Automatically updates your personal budget and generates Dues & Owes.
@@ -203,7 +203,7 @@ export default function SharedExpenses({
 
         <button
           onClick={openAddModal}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-indigo-500 hover:from-purple-500 hover:to-indigo-400 text-white font-semibold text-xs sm:text-sm shadow-md shadow-purple-600/30 transition-all duration-200 hover:scale-[1.02] active:scale-[0.97] cursor-pointer btn-shimmer btn-press"
+          className="w-full sm:w-auto justify-center flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-indigo-500 hover:from-purple-500 hover:to-indigo-400 text-white font-semibold text-xs sm:text-sm shadow-md shadow-purple-600/30 transition-all duration-200 hover:scale-[1.02] active:scale-[0.97] cursor-pointer btn-shimmer btn-press"
         >
           <Plus className="w-4 h-4" /> Create Shared Expense
         </button>
@@ -231,17 +231,17 @@ export default function SharedExpenses({
             return (
               <div
                 key={expense.id}
-                className="p-5 rounded-2xl glass-panel-interactive space-y-4 border border-slate-800"
+                className="p-4 sm:p-5 rounded-2xl glass-panel-interactive space-y-3.5 sm:space-y-4 border border-slate-800"
               >
                 {/* Header row */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-sm">
-                      <Users className="w-5 h-5" />
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="p-2 sm:p-2.5 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-sm flex-shrink-0">
+                      <Users className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
-                    <div>
-                      <h4 className="text-lg font-bold text-white tracking-tight">{expense.title}</h4>
-                      <div className="flex items-center gap-2.5 text-xs text-slate-400 mt-0.5">
+                    <div className="min-w-0">
+                      <h4 className="text-base sm:text-lg font-bold text-white tracking-tight truncate">{expense.title}</h4>
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mt-0.5">
                         <span className="flex items-center gap-1 tabular-nums">
                           <Calendar className="w-3.5 h-3.5 text-slate-500" /> {expense.date}
                         </span>
@@ -255,10 +255,10 @@ export default function SharedExpenses({
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between sm:justify-end gap-4">
+                  <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 pt-1 sm:pt-0">
                     <div className="text-left sm:text-right">
-                      <div className="text-xs text-slate-400 font-medium">Total Bill</div>
-                      <div className="text-lg font-black text-white tabular-nums">
+                      <div className="text-[11px] sm:text-xs text-slate-400 font-medium">Total Bill</div>
+                      <div className="text-base sm:text-lg font-black text-white tabular-nums">
                         {currencySymbol} {expense.totalAmount.toLocaleString()}
                       </div>
                     </div>
@@ -266,7 +266,7 @@ export default function SharedExpenses({
                     <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => openEditModal(expense)}
-                        className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer active:scale-90"
+                        className="p-2 sm:p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer active:scale-90"
                         title="Edit Shared Expense"
                       >
                         <Edit3 className="w-4 h-4" />
@@ -277,7 +277,7 @@ export default function SharedExpenses({
                             onDeleteSharedExpense(expense.id);
                           }
                         }}
-                        className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-colors cursor-pointer active:scale-90"
+                        className="p-2 sm:p-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-colors cursor-pointer active:scale-90"
                         title="Delete Shared Expense"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -333,10 +333,13 @@ export default function SharedExpenses({
 
       {/* Add / Edit Shared Expense Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto modal-overlay">
-          <div className="w-full max-w-2xl rounded-2xl glass-modal p-6 shadow-2xl relative my-8 modal-sheet border border-slate-800">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto modal-overlay">
+          <div className="w-full max-w-2xl rounded-t-3xl sm:rounded-2xl glass-modal p-5 sm:p-6 shadow-2xl relative sm:my-8 modal-sheet max-h-[92vh] overflow-y-auto border border-slate-800">
+            {/* Mobile Drag Indicator Pill */}
+            <div className="w-12 h-1 bg-slate-700 rounded-full mx-auto mb-3 sm:hidden" />
+
+            <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-800">
+              <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
                 <Users className="w-5 h-5 text-purple-400" />
                 {editingExpense ? 'Edit Shared Expense' : 'Create Shared Expense'}
               </h3>
@@ -348,7 +351,7 @@ export default function SharedExpenses({
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+            <form onSubmit={handleSubmit} className="mt-4 sm:mt-5 space-y-3.5 sm:space-y-4">
               {/* Title / Place */}
               <div>
                 <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
@@ -360,12 +363,12 @@ export default function SharedExpenses({
                   placeholder="e.g. Domino's Pizza Party, Goa Trip Fuel, Flat Wi-Fi"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-purple-500 transition-colors font-medium"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 text-base sm:text-sm focus:outline-none focus:border-purple-500 transition-colors font-medium"
                 />
               </div>
 
               {/* Total & Date */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                     Total Bill Amount ({currencySymbol}) *
@@ -378,7 +381,7 @@ export default function SharedExpenses({
                     placeholder="0.00"
                     value={totalAmount}
                     onChange={(e) => setTotalAmount(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-purple-500 transition-colors font-bold tabular-nums"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 text-base sm:text-sm focus:outline-none focus:border-purple-500 transition-colors font-bold tabular-nums"
                   />
                 </div>
 
@@ -391,7 +394,7 @@ export default function SharedExpenses({
                     required
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-purple-500 transition-colors tabular-nums"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-base sm:text-sm focus:outline-none focus:border-purple-500 transition-colors tabular-nums"
                   />
                 </div>
               </div>
@@ -404,7 +407,7 @@ export default function SharedExpenses({
                 <select
                   value={payerId}
                   onChange={(e) => setPayerId(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-purple-500 transition-colors font-medium cursor-pointer"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-base sm:text-sm focus:outline-none focus:border-purple-500 transition-colors font-medium cursor-pointer"
                 >
                   <option value="user">You (Myself)</option>
                   {people.map(p => (
@@ -422,7 +425,7 @@ export default function SharedExpenses({
 
               {/* Participants Section */}
               <div className="pt-2 border-t border-slate-800">
-                <div className="flex items-center justify-between mb-2.5">
+                <div className="flex flex-col xs:flex-row items-start xs:items-center justify-between gap-2 mb-2.5">
                   <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
                     Select Participants ({participants.length})
                   </label>
@@ -449,7 +452,7 @@ export default function SharedExpenses({
                 </div>
 
                 {/* Available people chips */}
-                <div className="flex flex-wrap gap-2 mb-3">
+                <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3">
                   <span className="px-3 py-1.5 rounded-xl bg-purple-500/20 border border-purple-500/40 text-purple-300 text-xs font-semibold flex items-center gap-1.5 shadow-sm">
                     <UserCheck className="w-3.5 h-3.5" /> You (Myself)
                   </span>
@@ -484,7 +487,7 @@ export default function SharedExpenses({
                       placeholder="Friend's Name"
                       value={newPersonName}
                       onChange={(e) => setNewPersonName(e.target.value)}
-                      className="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                      className="px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-base sm:text-xs placeholder-slate-500 focus:outline-none focus:border-purple-500"
                     />
                     <input
                       type="text"
@@ -492,12 +495,12 @@ export default function SharedExpenses({
                       placeholder="4-digit ID"
                       value={suggestedId}
                       onChange={(e) => setSuggestedId(e.target.value)}
-                      className="w-full px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-purple-500 font-mono"
+                      className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-base sm:text-xs placeholder-slate-500 focus:outline-none focus:border-purple-500 font-mono"
                     />
                     <button
                       type="button"
                       onClick={handleCreateAndAddPerson}
-                      className="px-3 py-1.5 rounded-lg bg-purple-600/20 border border-purple-500/40 hover:bg-purple-600/30 text-purple-300 text-xs font-semibold transition-all cursor-pointer active:scale-95"
+                      className="w-full px-3 py-2 rounded-lg bg-purple-600/20 border border-purple-500/40 hover:bg-purple-600/30 text-purple-300 text-xs font-semibold transition-all cursor-pointer active:scale-95"
                     >
                       + Save & Add
                     </button>
@@ -510,7 +513,7 @@ export default function SharedExpenses({
                     <div className="text-xs font-semibold text-slate-300 mb-1">Enter Individual Shares:</div>
                     {participants.map((p, idx) => (
                       <div key={p.id} className="flex items-center justify-between gap-3 text-xs">
-                        <span className="text-slate-300 font-medium">{p.name}</span>
+                        <span className="text-slate-300 font-medium truncate max-w-[150px]">{p.name}</span>
                         <div className="flex items-center gap-1 w-32">
                           <span className="text-slate-500">{currencySymbol}</span>
                           <input
@@ -524,7 +527,7 @@ export default function SharedExpenses({
                               updated[idx].shareAmount = val;
                               setParticipants(updated);
                             }}
-                            className="w-full px-2 py-1 rounded bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-purple-500 tabular-nums"
+                            className="w-full px-2 py-1.5 rounded bg-slate-950 border border-slate-800 text-white text-base sm:text-xs focus:outline-none focus:border-purple-500 tabular-nums"
                           />
                         </div>
                       </div>
@@ -547,17 +550,17 @@ export default function SharedExpenses({
               </div>
 
               {/* Actions */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-2.5 sm:gap-3 pt-3.5 sm:pt-4 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold transition-colors cursor-pointer active:scale-95"
+                  className="flex-1 sm:flex-initial text-center px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold transition-colors cursor-pointer active:scale-95"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-indigo-500 hover:from-purple-500 hover:to-indigo-400 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-purple-600/25 transition-all cursor-pointer active:scale-95"
+                  className="flex-1 sm:flex-initial text-center px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-indigo-500 hover:from-purple-500 hover:to-indigo-400 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-purple-600/25 transition-all cursor-pointer active:scale-95"
                 >
                   {editingExpense ? 'Save Changes' : 'Record Shared Bill'}
                 </button>

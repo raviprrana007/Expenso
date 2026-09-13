@@ -124,15 +124,15 @@ export default function PersonDirectory({
   });
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-4 sm:space-y-6 pb-12">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl glass-panel">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl glass-panel">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-sm">
+            <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-sm flex-shrink-0">
               <Contact className="w-5 h-5" />
             </div>
-            <h1 className="text-xl font-bold text-white tracking-tight">People & 4-Digit Directory</h1>
+            <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">People & 4-Digit Directory</h1>
           </div>
           <p className="text-xs text-slate-400 mt-1">
             Every person has an immutable unique 4-digit identifier to prevent confusion and duplicate accounts.
@@ -141,47 +141,48 @@ export default function PersonDirectory({
 
         <button
           onClick={openAddModal}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-xs sm:text-sm shadow-md shadow-indigo-600/30 transition-all duration-200 hover:scale-[1.02] active:scale-[0.97] cursor-pointer btn-shimmer btn-press"
+          className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-xs sm:text-sm shadow-md shadow-indigo-600/30 transition-all duration-200 hover:scale-[1.02] active:scale-[0.97] cursor-pointer btn-shimmer btn-press"
         >
           <Plus className="w-4 h-4" /> Add New Person
         </button>
       </div>
 
-      {/* Search Bar */}
-      <div className="p-4 rounded-2xl glass-panel flex items-center justify-between gap-4">
+      {/* Search Bar & Stats */}
+      <div className="p-3.5 sm:p-4 rounded-2xl glass-panel flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
         <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
           <input
             type="text"
             placeholder="Search by name, 4-digit ID, or phone..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:border-indigo-500 transition-colors font-medium"
+            className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 placeholder-slate-500 text-base sm:text-sm focus:outline-none focus:border-indigo-500 transition-colors font-medium"
           />
         </div>
 
-        <div className="text-xs text-slate-400 hidden sm:block">
-          Total Registered: <strong className="text-white tabular-nums font-bold">{people.length} People</strong>
+        <div className="text-xs text-slate-400 flex items-center justify-between sm:justify-start">
+          <span>Registered:</span>
+          <strong className="text-white tabular-nums font-bold ml-1.5">{people.length} People</strong>
         </div>
       </div>
 
       {/* People Grid */}
       {filteredPeople.length === 0 ? (
-        <div className="py-16 text-center rounded-2xl glass-panel">
-          <Sparkles className="w-12 h-12 mx-auto text-slate-600 mb-3" />
+        <div className="py-12 sm:py-16 text-center rounded-2xl glass-panel px-4">
+          <Sparkles className="w-10 sm:w-12 h-10 sm:h-12 mx-auto text-slate-600 mb-3" />
           <h3 className="text-base font-semibold text-slate-300">No people found</h3>
           <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
             Add friends, roommates, or classmates with unique 4-digit IDs to quickly split expenses and track dues.
           </p>
           <button
             onClick={openAddModal}
-            className="mt-5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md inline-flex items-center gap-1.5 transition-all cursor-pointer btn-press"
+            className="mt-4 sm:mt-5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md inline-flex items-center gap-1.5 transition-all cursor-pointer btn-press"
           >
             <Plus className="w-4 h-4" /> Add Person Now
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 stagger-items">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 stagger-items">
           {filteredPeople.map(person => {
             const personNet = summary.personNetList.find(p => String(p.id) === String(person.id));
             const netVal = personNet ? personNet.net : 0;
@@ -191,30 +192,30 @@ export default function PersonDirectory({
             return (
               <div
                 key={person.id}
-                className="p-5 rounded-2xl glass-panel-interactive border border-slate-800 flex flex-col justify-between space-y-4"
+                className="p-4 sm:p-5 rounded-2xl glass-panel-interactive border border-slate-800 flex flex-col justify-between space-y-4"
               >
                 <div>
                   {/* Top row: Avatar + Name + 4-digit ID pill */}
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-slate-800 to-slate-700 border border-slate-600/50 flex items-center justify-center font-bold text-white text-base shadow-sm">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 sm:w-11 h-10 sm:h-11 rounded-xl bg-gradient-to-tr from-slate-800 to-slate-700 border border-slate-600/50 flex items-center justify-center font-bold text-white text-sm sm:text-base shadow-sm flex-shrink-0">
                         {person.name.charAt(0).toUpperCase()}
                       </div>
-                      <div>
-                        <h4 className="font-bold text-white text-base tracking-tight">{person.name}</h4>
+                      <div className="min-w-0">
+                        <h4 className="font-bold text-white text-sm sm:text-base tracking-tight truncate">{person.name}</h4>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                             #{person.id}
                           </span>
-                          <span className="text-[10px] text-slate-500 font-medium">Unique ID</span>
+                          <span className="text-[10px] text-slate-500 font-medium hidden xs:inline">Unique ID</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 flex-shrink-0">
                       <button
                         onClick={() => openEditModal(person)}
-                        className="p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer active:scale-90"
+                        className="p-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer active:scale-90"
                         title="Edit Details"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
@@ -225,7 +226,7 @@ export default function PersonDirectory({
                             onDeletePerson(person.id);
                           }
                         }}
-                        className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-colors cursor-pointer active:scale-90"
+                        className="p-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-colors cursor-pointer active:scale-90"
                         title="Delete Person"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -236,19 +237,19 @@ export default function PersonDirectory({
                   {/* Phone & Contact */}
                   {person.phone && (
                     <div className="mt-3 flex items-center gap-2 text-xs text-slate-400">
-                      <Phone className="w-3.5 h-3.5 text-slate-500" />
-                      <span className="tabular-nums">{person.phone}</span>
+                      <Phone className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
+                      <span className="tabular-nums truncate">{person.phone}</span>
                     </div>
                   )}
                 </div>
 
                 {/* Net Financial Position Footer */}
-                <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between">
-                  <div>
+                <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2">
+                  <div className="min-w-0">
                     <span className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider block">
                       Net Balance
                     </span>
-                    <span className={`text-sm font-black tabular-nums ${
+                    <span className={`text-xs sm:text-sm font-black tabular-nums truncate block ${
                       hasDue ? 'text-emerald-400' : hasOwe ? 'text-rose-400' : 'text-slate-400'
                     }`}>
                       {hasDue ? `+${currencySymbol}${netVal.toLocaleString()}` : hasOwe ? `-${currencySymbol}${Math.abs(netVal).toLocaleString()}` : `Settled (${currencySymbol}0)`}
@@ -256,7 +257,7 @@ export default function PersonDirectory({
                   </div>
 
                   {person.phone && (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       <a
                         href={`https://wa.me/${person.phone.replace(/[^0-9]/g, '')}`}
                         target="_blank"
@@ -264,7 +265,7 @@ export default function PersonDirectory({
                         className="px-2.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95"
                         title="WhatsApp Contact"
                       >
-                        <MessageSquare className="w-3.5 h-3.5" /> WhatsApp
+                        <MessageSquare className="w-3.5 h-3.5" /> <span className="hidden xs:inline">WhatsApp</span>
                       </a>
                     </div>
                   )}
@@ -277,19 +278,20 @@ export default function PersonDirectory({
 
       {/* Add / Edit Person Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm modal-overlay">
-          <div className="w-full max-w-md rounded-2xl glass-modal p-6 shadow-2xl relative modal-sheet border border-slate-800">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/80 backdrop-blur-sm modal-overlay">
+          <div className="w-full max-w-md rounded-t-3xl sm:rounded-2xl glass-modal p-5 sm:p-6 shadow-2xl relative modal-sheet border-t sm:border border-slate-800 pb-safe max-h-[92vh] sm:max-h-[90vh] overflow-y-auto">
+            <div className="w-12 h-1.5 bg-slate-700/60 rounded-full mx-auto mb-4 sm:hidden" />
+            <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-800">
+              <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
                 <Contact className="w-5 h-5 text-indigo-400" />
                 {editingPerson ? 'Edit Person' : 'Register New Person'}
               </h3>
-              <button onClick={closeModal} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer">
+              <button onClick={closeModal} className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+            <form onSubmit={handleSubmit} className="mt-4 sm:mt-5 space-y-4">
               {/* Name */}
               <div>
                 <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
@@ -301,7 +303,7 @@ export default function PersonDirectory({
                   placeholder="e.g. Ravi Kumar"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500 transition-colors font-medium"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 text-base sm:text-sm focus:outline-none focus:border-indigo-500 transition-colors font-medium"
                 />
               </div>
 
@@ -315,7 +317,7 @@ export default function PersonDirectory({
                     <button
                       type="button"
                       onClick={handleRegenerateId}
-                      className="text-[11px] text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 cursor-pointer"
+                      className="text-[11px] text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 cursor-pointer py-1"
                     >
                       <Sparkles className="w-3 h-3" /> Suggest Another ID
                     </button>
@@ -358,23 +360,23 @@ export default function PersonDirectory({
                   placeholder="e.g. 9876543210 (For WhatsApp reminders)"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500 transition-colors"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 text-base sm:text-sm focus:outline-none focus:border-indigo-500 transition-colors"
                 />
               </div>
 
               {/* Actions */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-4 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold transition-colors cursor-pointer active:scale-95"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold transition-colors cursor-pointer active:scale-95 text-center"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={!editingPerson && (customId.length !== 4 || !!idError)}
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs sm:text-sm font-semibold shadow-lg shadow-indigo-600/30 transition-all cursor-pointer active:scale-95"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs sm:text-sm font-semibold shadow-lg shadow-indigo-600/30 transition-all cursor-pointer active:scale-95 text-center"
                 >
                   {editingPerson ? 'Save Changes' : 'Create Person'}
                 </button>

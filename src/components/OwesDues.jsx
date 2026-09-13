@@ -252,29 +252,31 @@ export default function OwesDues({
   };
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-4 sm:space-y-6 pb-6 sm:pb-12">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl glass-panel">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl glass-panel">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-sm">
-              <ArrowLeftRight className="w-5 h-5" />
+            <div className="p-2 sm:p-2.5 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-sm flex-shrink-0">
+              <ArrowLeftRight className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <h1 className="text-xl font-bold text-white tracking-tight">Owes & Dues Manager</h1>
+            <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">Owes & Dues Manager</h1>
           </div>
           <p className="text-xs text-slate-400 mt-1">
             Track money owed to you or payable by you, net calculations per person, and 30-day auto-settlement deletion.
           </p>
-        </div>        <div className="flex items-center gap-2">
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full sm:w-auto">
           <button
             onClick={() => openAddModal('due')}
-            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-md shadow-emerald-600/30 transition-all cursor-pointer btn-press btn-shimmer"
+            className="flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs shadow-md shadow-emerald-600/30 transition-all cursor-pointer btn-press btn-shimmer"
           >
-            <ArrowDownLeft className="w-4 h-4" /> + Someone Owes Me (Due)
+            <ArrowDownLeft className="w-4 h-4" /> + Someone Owes Me
           </button>
           <button
             onClick={() => openAddModal('owe')}
-            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs shadow-md shadow-rose-600/30 transition-all cursor-pointer btn-press btn-shimmer"
+            className="flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs shadow-md shadow-rose-600/30 transition-all cursor-pointer btn-press btn-shimmer"
           >
             <ArrowUpRight className="w-4 h-4" /> + I Owe Someone
           </button>
@@ -282,7 +284,7 @@ export default function OwesDues({
       </div>
 
       {/* Person-Wise Net Summary Grid */}
-      <div className="p-5 rounded-2xl glass-panel space-y-4">
+      <div className="p-4 sm:p-5 rounded-2xl glass-panel space-y-3.5 sm:space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <UserCheck className="w-4 h-4 text-indigo-400" />
@@ -296,7 +298,7 @@ export default function OwesDues({
         {summary.personNetList.length === 0 ? (
           <p className="text-xs text-slate-500 py-2">No people registered in your directory yet.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 stagger-items">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 stagger-items">
             {summary.personNetList.map(person => {
               const hasNetDue = person.net > 0;
               const hasNetOwe = person.net < 0;
@@ -348,7 +350,7 @@ export default function OwesDues({
                             href={getWhatsAppLink(person.phone, person.name, person.net, hasNetDue)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="p-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/20 transition-colors"
+                            className="p-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/20 transition-colors"
                             title="Send WhatsApp Reminder"
                           >
                             <MessageSquare className="w-3.5 h-3.5" />
@@ -356,7 +358,7 @@ export default function OwesDues({
                         )}
                         <a
                           href={`tel:${person.phone}`}
-                          className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                          className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
                           title="Call Phone"
                         >
                           <Phone className="w-3.5 h-3.5" />
@@ -372,19 +374,19 @@ export default function OwesDues({
       </div>
 
       {/* Tabs & Controls */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
         {/* In Process vs Settled Tabs */}
-        <div className="flex items-center p-1 rounded-2xl bg-slate-900 border border-slate-800">
+        <div className="grid grid-cols-2 sm:flex items-center p-1 rounded-2xl bg-slate-900 border border-slate-800 w-full sm:w-auto">
           <button
             onClick={() => setActiveTab('in_process')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+            className={`flex items-center justify-center gap-2 px-3 sm:px-3.5 py-2 sm:py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
               activeTab === 'in_process'
                 ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
             <Clock className="w-3.5 h-3.5" />
-            In Process
+            <span>In Process</span>
             <span className="px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-300 text-[10px] tabular-nums font-bold">
               {owesDues.filter(i => i.status !== 'settled').length}
             </span>
@@ -392,21 +394,21 @@ export default function OwesDues({
 
           <button
             onClick={() => setActiveTab('settled')}
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+            className={`flex items-center justify-center gap-2 px-3 sm:px-3.5 py-2 sm:py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
               activeTab === 'settled'
                 ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
             <CheckCircle2 className="w-3.5 h-3.5" />
-            Settled (30-Day Window)
+            <span>Settled</span>
             <span className="px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-300 text-[10px] tabular-nums font-bold">
               {owesDues.filter(i => i.status === 'settled').length}
             </span>
           </button>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-end sm:self-center">
           {/* Person filter clear button if active */}
           {selectedPersonFilter !== 'all' && (
             <button
@@ -461,17 +463,17 @@ export default function OwesDues({
             return (
               <div
                 key={item.id}
-                className={`p-4 rounded-2xl glass-panel-interactive border transition-all ${
+                className={`p-3.5 sm:p-4 rounded-2xl glass-panel-interactive border transition-all ${
                   isSettled ? 'border-slate-800/80 opacity-90' : isDue ? 'border-emerald-500/20' : 'border-rose-500/20'
                 }`}
               >
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
                   {/* Left: Checkbox + Description */}
-                  <div className="flex items-start sm:items-center gap-3.5">
+                  <div className="flex items-start sm:items-center gap-3 w-full sm:w-auto">
                     {/* Checkbox (Unchecked = In Process, Checked = Settled) */}
                     <button
                       onClick={() => handleToggle(item)}
-                      className={`p-1.5 rounded-xl border transition-all flex-shrink-0 mt-0.5 sm:mt-0 cursor-pointer active:scale-90 ${
+                      className={`p-2 sm:p-1.5 rounded-xl border transition-all flex-shrink-0 mt-0.5 sm:mt-0 cursor-pointer active:scale-90 min-w-[36px] min-h-[36px] flex items-center justify-center ${
                         isSettled
                           ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/30'
                           : 'bg-slate-900 border-slate-700 text-slate-500 hover:border-slate-500 hover:text-slate-300'
@@ -481,9 +483,9 @@ export default function OwesDues({
                       {isSettled ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5" />}
                     </button>
 
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h4 className={`text-base font-bold tracking-tight ${isSettled ? 'line-through text-slate-400' : 'text-white'}`}>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        <h4 className={`text-sm sm:text-base font-bold tracking-tight truncate ${isSettled ? 'line-through text-slate-400' : 'text-white'}`}>
                           {item.title}
                         </h4>
                         <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full border ${
@@ -506,13 +508,13 @@ export default function OwesDues({
                         )}
                       </div>
 
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400 mt-1">
+                      <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-slate-400 mt-1">
                         <span className="font-semibold text-slate-200">
                           {item.personName} <span className="text-slate-500 text-[10px] font-mono">#{item.personId}</span>
                         </span>
                         <span>•</span>
                         <span className="flex items-center gap-1 tabular-nums">
-                          <Calendar className="w-3.5 h-3.5 text-slate-500" /> Created: {item.date}
+                          <Calendar className="w-3.5 h-3.5 text-slate-500" /> {item.date}
                         </span>
                         {isSettled && item.settlementDate && (
                           <>
@@ -531,9 +533,9 @@ export default function OwesDues({
                   </div>
 
                   {/* Right: Amount & Actions */}
-                  <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-3">
+                  <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800/60">
                     <div className="text-left sm:text-right">
-                      <span className={`text-lg font-black tabular-nums ${
+                      <span className={`text-base sm:text-lg font-black tabular-nums ${
                         isSettled ? 'text-slate-400' : isDue ? 'text-emerald-400' : 'text-rose-400'
                       }`}>
                         {currencySymbol} {(Number(item.amount) || 0).toLocaleString()}
@@ -553,13 +555,13 @@ export default function OwesDues({
                           className="px-2.5 py-1.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer active:scale-95"
                           title="Partially settle this record"
                         >
-                          <Split className="w-3.5 h-3.5" /> Partial
+                          <Split className="w-3.5 h-3.5" /> <span className="hidden xs:inline">Partial</span>
                         </button>
                       )}
 
                       <button
                         onClick={() => openEditModal(item)}
-                        className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer active:scale-90"
+                        className="p-2 sm:p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer active:scale-90"
                         title="Edit Record"
                       >
                         <Edit3 className="w-4 h-4" />
@@ -571,7 +573,7 @@ export default function OwesDues({
                             onDeleteOweDue(item.id);
                           }
                         }}
-                        className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-colors cursor-pointer active:scale-90"
+                        className="p-2 sm:p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-colors cursor-pointer active:scale-90"
                         title="Delete Record"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -587,49 +589,50 @@ export default function OwesDues({
 
       {/* Add / Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto modal-overlay">
-          <div className="w-full max-w-lg rounded-2xl glass-modal p-6 shadow-2xl relative modal-sheet my-8 max-h-[90vh] overflow-y-auto border border-slate-800">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto modal-overlay">
+          <div className="w-full max-w-lg rounded-t-3xl sm:rounded-2xl glass-modal p-5 sm:p-6 shadow-2xl relative modal-sheet max-h-[92vh] sm:max-h-[90vh] overflow-y-auto border-t sm:border border-slate-800 pb-safe">
+            <div className="w-12 h-1.5 bg-slate-700/60 rounded-full mx-auto mb-4 sm:hidden" />
+            <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-800">
+              <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
                 <ArrowLeftRight className="w-5 h-5 text-purple-400" />
                 {editingItem ? 'Edit Owes / Dues Record' : 'Record New Owes / Dues'}
               </h3>
-              <button onClick={closeModal} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer">
+              <button onClick={closeModal} className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+            <form onSubmit={handleSubmit} className="mt-4 sm:mt-5 space-y-4">
               {/* Type selector */}
               <div>
                 <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                   Record Type *
                 </label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
                   <button
                     type="button"
                     onClick={() => setFormData({ ...formData, type: 'due' })}
-                    className={`p-3 rounded-xl border text-left font-semibold text-xs transition-all flex items-center gap-2 cursor-pointer ${
+                    className={`p-2.5 sm:p-3 rounded-xl border text-left font-semibold text-xs transition-all flex items-center gap-2 cursor-pointer ${
                       formData.type === 'due'
                         ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300 shadow-sm'
                         : 'bg-slate-900 border-slate-800 text-slate-400'
                     }`}
                   >
-                    <ArrowDownLeft className="w-4 h-4 text-emerald-400" />
-                    Due (They owe me)
+                    <ArrowDownLeft className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    <span className="truncate">Due (They owe me)</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setFormData({ ...formData, type: 'owe' })}
-                    className={`p-3 rounded-xl border text-left font-semibold text-xs transition-all flex items-center gap-2 cursor-pointer ${
+                    className={`p-2.5 sm:p-3 rounded-xl border text-left font-semibold text-xs transition-all flex items-center gap-2 cursor-pointer ${
                       formData.type === 'owe'
                         ? 'bg-rose-500/20 border-rose-500 text-rose-300 shadow-sm'
                         : 'bg-slate-900 border-slate-800 text-slate-400'
                     }`}
                   >
-                    <ArrowUpRight className="w-4 h-4 text-rose-400" />
-                    Owe (I owe them)
+                    <ArrowUpRight className="w-4 h-4 text-rose-400 flex-shrink-0" />
+                    <span className="truncate">Owe (I owe them)</span>
                   </button>
                 </div>
               </div>
@@ -642,15 +645,15 @@ export default function OwesDues({
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Lent cash for auto rickshaw, semester notes fee"
+                  placeholder="e.g. Lent cash for auto rickshaw, notes fee"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-purple-500 transition-colors font-medium"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 text-base sm:text-sm focus:outline-none focus:border-purple-500 transition-colors font-medium"
                 />
               </div>
 
               {/* Amount & Date */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                     Amount ({currencySymbol}) *
@@ -663,7 +666,7 @@ export default function OwesDues({
                     placeholder="0.00"
                     value={formData.amount}
                     onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-purple-500 transition-colors font-bold tabular-nums"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-base sm:text-sm focus:outline-none focus:border-purple-500 transition-colors font-bold tabular-nums"
                   />
                 </div>
 
@@ -676,7 +679,7 @@ export default function OwesDues({
                     required
                     value={formData.date}
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-purple-500 transition-colors tabular-nums"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-base sm:text-sm focus:outline-none focus:border-purple-500 transition-colors tabular-nums"
                   />
                 </div>
               </div>
@@ -715,7 +718,7 @@ export default function OwesDues({
                       placeholder="Enter custom mode (e.g. Crypto, Cheque, Gift Voucher)"
                       value={formData.customPaymentMode}
                       onChange={(e) => setFormData({ ...formData, customPaymentMode: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-purple-500/50 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-purple-500/50 text-white text-base sm:text-xs placeholder-slate-500 focus:outline-none focus:border-purple-500"
                     />
                   </div>
                 )}
@@ -733,7 +736,7 @@ export default function OwesDues({
                       setIsAddingNewPerson(!isAddingNewPerson);
                       if (!suggestedId) setSuggestedId(StorageService.generateUniquePersonId());
                     }}
-                    className="text-xs text-purple-400 hover:text-purple-300 font-semibold inline-flex items-center gap-1 cursor-pointer"
+                    className="text-xs text-purple-400 hover:text-purple-300 font-semibold inline-flex items-center gap-1 cursor-pointer py-1"
                   >
                     <UserPlus className="w-3.5 h-3.5" />
                     <span>{isAddingNewPerson ? 'Cancel' : '+ New Person'}</span>
@@ -742,7 +745,7 @@ export default function OwesDues({
 
                 {/* Inline On-the-spot Person Add Form */}
                 {isAddingNewPerson && (
-                  <div className="p-3.5 mb-2.5 rounded-xl bg-purple-950/30 border border-purple-500/40 space-y-2.5 animate-in fade-in">
+                  <div className="p-3 sm:p-3.5 mb-2.5 rounded-xl bg-purple-950/30 border border-purple-500/40 space-y-2.5 animate-in fade-in">
                     <div className="flex items-center justify-between text-xs">
                       <span className="font-bold text-purple-300 flex items-center gap-1.5">
                         <UserPlus className="w-3.5 h-3.5" /> Quick Add Person to Directory
@@ -758,21 +761,21 @@ export default function OwesDues({
                         placeholder="Full Name *"
                         value={newPersonName}
                         onChange={(e) => setNewPersonName(e.target.value)}
-                        className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-purple-400"
+                        className="px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white text-base sm:text-xs placeholder-slate-500 focus:outline-none focus:border-purple-400"
                       />
                       <input
                         type="tel"
                         placeholder="Phone (optional)"
                         value={newPersonPhone}
                         onChange={(e) => setNewPersonPhone(e.target.value)}
-                        className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-purple-400"
+                        className="px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-white text-base sm:text-xs placeholder-slate-500 focus:outline-none focus:border-purple-400"
                       />
                     </div>
 
                     <button
                       type="button"
                       onClick={handleCreateAndSelectPerson}
-                      className="w-full py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs transition-colors shadow-sm cursor-pointer active:scale-95"
+                      className="w-full py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs transition-colors shadow-sm cursor-pointer active:scale-95"
                     >
                       Save & Select #{suggestedId}
                     </button>
@@ -783,7 +786,7 @@ export default function OwesDues({
                   required
                   value={formData.personId}
                   onChange={(e) => setFormData({ ...formData, personId: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-purple-500 transition-colors font-medium cursor-pointer"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-base sm:text-sm focus:outline-none focus:border-purple-500 transition-colors font-medium cursor-pointer"
                 >
                   <option value="">-- Select Person --</option>
                   {people.map(p => (
@@ -795,17 +798,17 @@ export default function OwesDues({
               </div>
 
               {/* Actions */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-4 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold transition-colors cursor-pointer active:scale-95"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold transition-colors cursor-pointer active:scale-95 text-center"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-purple-600/25 transition-all cursor-pointer active:scale-95"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-purple-600/25 transition-all cursor-pointer active:scale-95 text-center"
                 >
                   {editingItem ? 'Save Changes' : 'Save Record'}
                 </button>
@@ -817,14 +820,15 @@ export default function OwesDues({
 
       {/* Partial Settlement Modal */}
       {isPartialModalOpen && partialTargetItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm modal-overlay">
-          <div className="w-full max-w-md rounded-2xl glass-modal p-6 shadow-2xl relative modal-sheet border border-slate-800">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/80 backdrop-blur-sm modal-overlay">
+          <div className="w-full max-w-md rounded-t-3xl sm:rounded-2xl glass-modal p-5 sm:p-6 shadow-2xl relative modal-sheet border-t sm:border border-slate-800 pb-safe">
+            <div className="w-12 h-1.5 bg-slate-700/60 rounded-full mx-auto mb-4 sm:hidden" />
+            <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-800">
+              <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
                 <Split className="w-5 h-5 text-indigo-400" />
                 Record Partial Settlement
               </h3>
-              <button onClick={closePartialModal} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer">
+              <button onClick={closePartialModal} className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -853,24 +857,24 @@ export default function OwesDues({
                   placeholder="e.g. 200"
                   value={partialAmount}
                   onChange={(e) => setPartialAmount(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-indigo-500 transition-colors font-bold tabular-nums"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-base sm:text-sm focus:outline-none focus:border-indigo-500 transition-colors font-bold tabular-nums"
                 />
                 <p className="text-[11px] text-slate-400 mt-1">
                   <span className="tabular-nums font-semibold text-slate-300">{currencySymbol}{partialAmount || 0}</span> will be marked as settled, and <span className="tabular-nums font-semibold text-slate-300">{currencySymbol}{Math.max(0, (partialTargetItem.amount - (parseFloat(partialAmount) || 0))).toFixed(2)}</span> will remain In Process.
                 </p>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-4 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={closePartialModal}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold transition-colors cursor-pointer active:scale-95"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold transition-colors cursor-pointer active:scale-95 text-center"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-indigo-600/30 transition-all cursor-pointer active:scale-95"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-indigo-600/30 transition-all cursor-pointer active:scale-95 text-center"
                 >
                   Confirm Partial Settlement
                 </button>

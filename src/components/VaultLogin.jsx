@@ -216,47 +216,47 @@ export default function VaultLogin({
   const currentCurrencySymbol = CURRENCIES.find(c => c.code === currency)?.symbol || '₹';
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center items-center px-4 py-8 relative overflow-hidden selection:bg-indigo-500/40">
+    <div className="min-h-[100dvh] bg-slate-950 text-slate-100 flex flex-col justify-center items-center px-3.5 sm:px-6 py-6 sm:py-12 relative overflow-hidden selection:bg-indigo-500/40">
       {/* Background Decorative Ambient Glows */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-indigo-600/15 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-10 right-1/4 w-[400px] h-[300px] bg-purple-600/10 blur-[100px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] sm:w-[600px] h-[250px] sm:h-[350px] bg-indigo-600/15 blur-[100px] sm:blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-10 right-1/4 w-[250px] sm:w-[400px] h-[200px] sm:h-[300px] bg-purple-600/10 blur-[80px] sm:blur-[100px] rounded-full pointer-events-none" />
 
       {/* Main Container */}
       <div className="w-full max-w-2xl relative z-10">
         {/* Header Branding */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl shadow-xl shadow-indigo-500/25 mb-4 border border-indigo-400/30 overflow-hidden group hover:scale-105 transition-transform">
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl shadow-xl shadow-indigo-500/25 mb-3 sm:mb-4 border border-indigo-400/30 overflow-hidden group hover:scale-105 transition-transform">
             <img src="/app-icon.png" alt="Expenso" className="w-full h-full object-cover" />
           </div>
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <h1 className="text-3xl sm:text-4xl font-black tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-200 bg-clip-text text-transparent">
+          <div className="flex items-center justify-center gap-2 mb-1.5 sm:mb-2">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-200 bg-clip-text text-transparent">
               EXPENSO VAULT
             </h1>
-            <span className="text-[10px] uppercase font-bold tracking-widest px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
+            <span className="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
               v1.0
             </span>
           </div>
-          <p className="text-sm text-slate-400 max-w-md mx-auto">
+          <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto px-2">
             Your private, offline-first expense manager & group split ledger. Choose how you want to unlock your vault.
           </p>
         </div>
 
         {/* Tab Selection Segmented Control */}
-        <div className="grid grid-cols-2 gap-2 mb-6 p-1.5 bg-slate-900/80 rounded-2xl border border-slate-800 backdrop-blur-xl shadow-lg">
+        <div className="grid grid-cols-2 gap-1.5 sm:gap-2 mb-4 sm:mb-6 p-1 sm:p-1.5 bg-slate-900/80 rounded-2xl border border-slate-800 backdrop-blur-xl shadow-lg">
           <button
             type="button"
             onClick={() => {
               setActiveTab('new');
               setNewVaultError('');
             }}
-            className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 cursor-pointer ${
+            className={`flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 cursor-pointer ${
               activeTab === 'new'
                 ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-600/30 scale-[1.01]'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
             }`}
           >
-            <FolderPlus className="w-4 h-4" />
-            <span>Create New Vault</span>
+            <FolderPlus className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">Create New Vault</span>
           </button>
 
           <button
@@ -265,45 +265,45 @@ export default function VaultLogin({
               setActiveTab('existing');
               setImportError('');
             }}
-            className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 cursor-pointer ${
+            className={`flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl font-bold text-xs sm:text-sm transition-all duration-200 cursor-pointer ${
               activeTab === 'existing'
                 ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-600/30 scale-[1.01]'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
             }`}
           >
-            <KeyRound className="w-4 h-4" />
-            <span>Access Existing Vault</span>
+            <KeyRound className="w-4 h-4 flex-shrink-0" />
+            <span className="truncate">Access Existing Vault</span>
           </button>
         </div>
 
         {/* Card Body */}
-        <div className="glass-panel p-6 sm:p-8 rounded-3xl shadow-2xl border border-slate-800/80 relative">
+        <div className="glass-panel p-4 sm:p-7 md:p-8 rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-800/80 relative">
           {/* TAB 1: NEW VAULT SETUP */}
           {activeTab === 'new' && (
-            <form onSubmit={handleCreateNewVault} className="space-y-5 animate-in fade-in duration-200">
+            <form onSubmit={handleCreateNewVault} className="space-y-4 sm:space-y-5 animate-in fade-in duration-200">
               <div className="flex items-center gap-2.5 pb-3 border-b border-slate-800/80">
-                <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex-shrink-0">
                   <FolderPlus className="w-4 h-4" />
                 </div>
                 <div>
-                  <h2 className="text-base font-bold text-white">Setup Your Profile & Vault</h2>
+                  <h2 className="text-sm sm:text-base font-bold text-white">Setup Your Profile & Vault</h2>
                   <p className="text-xs text-slate-400">Configure your personal details and monthly budget limits.</p>
                 </div>
               </div>
 
               {newVaultError && (
-                <div className="p-3.5 rounded-xl bg-rose-950/50 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2">
+                <div className="p-3 sm:p-3.5 rounded-xl bg-rose-950/50 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   <span>{newVaultError}</span>
                 </div>
               )}
 
               {/* Profile Photo Upload (Optional) */}
-              <div className="flex items-center gap-4 p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800">
+              <div className="flex items-center gap-3.5 sm:gap-4 p-3 sm:p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800">
                 <div className="relative group flex-shrink-0">
                   <div
                     onClick={() => profilePicInputRef.current?.click()}
-                    className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-dashed border-indigo-500/50 hover:border-indigo-400 bg-slate-800/80 flex items-center justify-center cursor-pointer transition-all shadow-md group-hover:scale-105"
+                    className="w-14 sm:w-16 h-14 sm:h-16 rounded-2xl overflow-hidden border-2 border-dashed border-indigo-500/50 hover:border-indigo-400 bg-slate-800/80 flex items-center justify-center cursor-pointer transition-all shadow-md group-hover:scale-105"
                     title="Click to upload profile photo"
                   >
                     {profilePic ? (
@@ -330,7 +330,7 @@ export default function VaultLogin({
                   )}
                 </div>
 
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-white">Profile Photo (DP)</span>
                     <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
@@ -344,7 +344,7 @@ export default function VaultLogin({
                     <button
                       type="button"
                       onClick={() => profilePicInputRef.current?.click()}
-                      className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold hover:underline cursor-pointer flex items-center gap-1"
+                      className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold hover:underline cursor-pointer flex items-center gap-1 py-0.5"
                     >
                       <ImageIcon className="w-3.5 h-3.5" />
                       <span>{profilePic ? 'Change Photo' : 'Choose Image'}</span>
@@ -353,7 +353,7 @@ export default function VaultLogin({
                       <button
                         type="button"
                         onClick={() => setProfilePic('')}
-                        className="text-xs text-rose-400 hover:text-rose-300 font-semibold hover:underline cursor-pointer"
+                        className="text-xs text-rose-400 hover:text-rose-300 font-semibold hover:underline cursor-pointer py-0.5"
                       >
                         Remove
                       </button>
@@ -372,7 +372,7 @@ export default function VaultLogin({
               {/* User Name */}
               <div>
                 <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-indigo-400" />
+                  <User className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" />
                   <span>Your Full Name / Nickname <span className="text-rose-400">*</span></span>
                 </label>
                 <input
@@ -381,14 +381,14 @@ export default function VaultLogin({
                   value={userName}
                   onChange={(e) => setUserName(e.target.value)}
                   placeholder="e.g. Ravi Rana, Alex, Sarah"
-                  className="w-full px-4 py-3 rounded-xl bg-slate-900/90 border border-slate-700/80 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-medium"
+                  className="w-full px-4 py-2.5 sm:py-3 rounded-xl bg-slate-900/90 border border-slate-700/80 text-white placeholder-slate-500 text-base sm:text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-medium"
                 />
               </div>
 
               {/* Profession with quick suggestions */}
               <div>
                 <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                  <Briefcase className="w-3.5 h-3.5 text-purple-400" />
+                  <Briefcase className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
                   <span>Profession / Role</span>
                 </label>
                 <input
@@ -396,7 +396,7 @@ export default function VaultLogin({
                   value={profession}
                   onChange={(e) => setProfession(e.target.value)}
                   placeholder="e.g. Student, Software Engineer, Designer"
-                  className="w-full px-4 py-3 rounded-xl bg-slate-900/90 border border-slate-700/80 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-medium mb-2.5"
+                  className="w-full px-4 py-2.5 sm:py-3 rounded-xl bg-slate-900/90 border border-slate-700/80 text-white placeholder-slate-500 text-base sm:text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-medium mb-2.5"
                 />
 
                 {/* Quick Selection Tags */}
@@ -420,10 +420,10 @@ export default function VaultLogin({
               </div>
 
               {/* Monthly Spending Limit & Currency */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                    <Wallet className="w-3.5 h-3.5 text-emerald-400" />
+                    <Wallet className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
                     <span>Monthly Spending Limit</span>
                   </label>
                   <div className="relative">
@@ -436,20 +436,20 @@ export default function VaultLogin({
                       step="500"
                       value={monthlyLimit}
                       onChange={(e) => setMonthlyLimit(e.target.value)}
-                      className="w-full pl-9 pr-4 py-3 rounded-xl bg-slate-900/90 border border-slate-700/80 text-white font-bold text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all tabular-nums"
+                      className="w-full pl-9 pr-4 py-2.5 sm:py-3 rounded-xl bg-slate-900/90 border border-slate-700/80 text-white font-bold text-base sm:text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all tabular-nums"
                     />
                   </div>
                 </div>
 
                 <div>
                   <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                    <Coins className="w-3.5 h-3.5 text-amber-400" />
+                    <Coins className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
                     <span>Currency</span>
                   </label>
                   <select
                     value={currency}
                     onChange={(e) => setCurrency(e.target.value)}
-                    className="w-full px-3.5 py-3 rounded-xl bg-slate-900/90 border border-slate-700/80 text-white text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-medium cursor-pointer"
+                    className="w-full px-3.5 py-2.5 sm:py-3 rounded-xl bg-slate-900/90 border border-slate-700/80 text-white text-base sm:text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all font-medium cursor-pointer"
                   >
                     {CURRENCIES.map((c) => (
                       <option key={c.code} value={c.code}>
@@ -478,7 +478,7 @@ export default function VaultLogin({
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-sm shadow-xl shadow-indigo-600/25 transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.98] cursor-pointer"
+                className="w-full py-3 sm:py-3.5 px-6 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs sm:text-sm shadow-xl shadow-indigo-600/25 transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.98] cursor-pointer min-h-[44px]"
               >
                 <span>Initialize & Enter Vault</span>
                 <ArrowRight className="w-4 h-4" />
@@ -488,19 +488,19 @@ export default function VaultLogin({
 
           {/* TAB 2: EXISTING VAULT BACKUP RESTORE */}
           {activeTab === 'existing' && (
-            <div className="space-y-5 animate-in fade-in duration-200">
+            <div className="space-y-4 sm:space-y-5 animate-in fade-in duration-200">
               <div className="flex items-center gap-2.5 pb-3 border-b border-slate-800/80">
-                <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex-shrink-0">
                   <HardDriveDownload className="w-4 h-4" />
                 </div>
                 <div>
-                  <h2 className="text-base font-bold text-white">Import Expenso Backup File</h2>
+                  <h2 className="text-sm sm:text-base font-bold text-white">Import Expenso Backup File</h2>
                   <p className="text-xs text-slate-400">Restore your previously exported JSON backup to unlock your vault.</p>
                 </div>
               </div>
 
               {importError && (
-                <div className="p-3.5 rounded-xl bg-rose-950/50 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2">
+                <div className="p-3 sm:p-3.5 rounded-xl bg-rose-950/50 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   <span>{importError}</span>
                 </div>
@@ -514,24 +514,24 @@ export default function VaultLogin({
                   onDragOver={handleDrag}
                   onDrop={handleDrop}
                   onClick={() => fileInputRef.current?.click()}
-                  className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-200 flex flex-col items-center justify-center gap-3 ${
+                  className={`border-2 border-dashed rounded-2xl p-6 sm:p-8 text-center cursor-pointer transition-all duration-200 flex flex-col items-center justify-center gap-3 ${
                     dragActive
                       ? 'border-indigo-500 bg-indigo-500/10 scale-[1.01]'
                       : 'border-slate-700/80 hover:border-indigo-400/60 bg-slate-900/40 hover:bg-slate-900/70'
                   }`}
                 >
                   <div className="p-3.5 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 shadow-inner">
-                    <UploadCloud className="w-8 h-8" />
+                    <UploadCloud className="w-7 sm:w-8 h-7 sm:h-8" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-white mb-1">
+                    <p className="text-xs sm:text-sm font-bold text-white mb-1">
                       Drag & Drop your <span className="text-indigo-400 font-mono">Expenso_Backup_*.json</span> here
                     </p>
-                    <p className="text-xs text-slate-400">
-                      or click to browse from your computer / phone
+                    <p className="text-[11px] sm:text-xs text-slate-400">
+                      or tap to browse files on your device
                     </p>
                   </div>
-                  <span className="text-[11px] font-semibold text-indigo-300 px-3 py-1 rounded-full bg-indigo-950/60 border border-indigo-800/60">
+                  <span className="text-[10px] sm:text-[11px] font-semibold text-indigo-300 px-3 py-1 rounded-full bg-indigo-950/60 border border-indigo-800/60">
                     Supports Expenso v1.0 JSON Backups
                   </span>
                 </div>
@@ -549,25 +549,25 @@ export default function VaultLogin({
               {parsedBackupData && (
                 <div className="space-y-4">
                   <div className="p-4 rounded-2xl bg-slate-900/90 border border-emerald-500/30 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2.5 min-w-0">
                         {parsedBackupData.ownerProfilePic ? (
                           <img
                             src={parsedBackupData.ownerProfilePic}
                             alt={parsedBackupData.ownerName}
-                            className="w-10 h-10 rounded-xl object-cover border border-emerald-500/40 shadow-sm"
+                            className="w-10 h-10 rounded-xl object-cover border border-emerald-500/40 shadow-sm flex-shrink-0"
                           />
                         ) : (
-                          <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex-shrink-0">
                             <CheckCircle2 className="w-5 h-5" />
                           </div>
                         )}
-                        <div>
-                          <span className="text-sm font-bold text-white block truncate max-w-[280px]">
+                        <div className="min-w-0">
+                          <span className="text-xs sm:text-sm font-bold text-white block truncate">
                             {parsedBackupData.fileName}
                           </span>
-                          <span className="text-[11px] text-slate-400">
-                            {parsedBackupData.fileSize} • Exported on {parsedBackupData.exportDate}
+                          <span className="text-[11px] text-slate-400 block truncate">
+                            {parsedBackupData.fileSize} • Exported {parsedBackupData.exportDate}
                           </span>
                         </div>
                       </div>
@@ -578,9 +578,9 @@ export default function VaultLogin({
                           setSelectedFile(null);
                           setParsedBackupData(null);
                         }}
-                        className="text-xs text-slate-400 hover:text-rose-400 underline font-medium cursor-pointer"
+                        className="text-xs text-slate-400 hover:text-rose-400 underline font-medium cursor-pointer flex-shrink-0"
                       >
-                        Change File
+                        Change
                       </button>
                     </div>
 
@@ -618,7 +618,7 @@ export default function VaultLogin({
                     type="button"
                     disabled={isImporting}
                     onClick={handleUnlockExistingVault}
-                    className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-sm shadow-xl shadow-emerald-600/25 transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+                    className="w-full py-3 sm:py-3.5 px-6 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-indigo-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs sm:text-sm shadow-xl shadow-emerald-600/25 transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.98] disabled:opacity-50 cursor-pointer min-h-[44px]"
                   >
                     <Lock className="w-4 h-4" />
                     <span>{isImporting ? 'Restoring Vault...' : 'Unlock & Open Vault'}</span>
@@ -630,18 +630,18 @@ export default function VaultLogin({
         </div>
 
         {/* Quick Demo Option & Privacy Callout */}
-        <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400 px-2">
+        <div className="mt-5 sm:mt-6 flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-3 text-xs text-slate-400 px-2 text-center sm:text-left">
           <div className="flex items-center gap-1.5">
-            <Info className="w-3.5 h-3.5 text-indigo-400" />
+            <Info className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0" />
             <span>100% Offline & Private (Local-First Storage)</span>
           </div>
 
           <button
             type="button"
             onClick={onQuickDemo}
-            className="inline-flex items-center gap-1.5 text-indigo-300 hover:text-indigo-200 font-semibold hover:underline cursor-pointer transition-colors"
+            className="inline-flex items-center gap-1.5 text-indigo-300 hover:text-indigo-200 font-semibold hover:underline cursor-pointer transition-colors py-1"
           >
-            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+            <Sparkles className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
             <span>Launch Quick Student Demo Vault</span>
           </button>
         </div>

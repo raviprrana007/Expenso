@@ -173,38 +173,40 @@ export default function PersonalExpenses({
   const currentTotal = filteredTransactions.reduce((acc, t) => acc + (Number(t.amount) || 0), 0);
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-4 sm:space-y-6 pb-6 sm:pb-12">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl glass-panel">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-4 sm:p-5 rounded-2xl glass-panel">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-sm">
-              <Receipt className="w-5 h-5" />
+            <div className="p-2 sm:p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-sm flex-shrink-0">
+              <Receipt className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <h1 className="text-xl font-bold text-white tracking-tight">Personal Expenses</h1>
+            <h1 className="text-lg sm:text-xl font-bold text-white tracking-tight">Personal Expenses</h1>
           </div>
           <p className="text-xs text-slate-400 mt-1">
             Track individual expenses, edit historical entries, and monitor your monthly spending budget.
           </p>
-        </div>        <button
+        </div>
+
+        <button
           onClick={openAddModal}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-xs sm:text-sm shadow-md shadow-indigo-600/30 transition-all duration-200 hover:scale-[1.02] active:scale-[0.97] cursor-pointer btn-shimmer btn-press"
+          className="w-full sm:w-auto justify-center flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-xs sm:text-sm shadow-md shadow-indigo-600/30 transition-all duration-200 hover:scale-[1.02] active:scale-[0.97] cursor-pointer btn-shimmer btn-press"
         >
           <Plus className="w-4 h-4" /> Add Personal Expense
         </button>
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="p-4 rounded-2xl glass-panel grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-center">
+      <div className="p-3.5 sm:p-4 rounded-2xl glass-panel grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3 items-center">
         {/* Search */}
         <div className="relative">
           <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Search expenses, modes..."
+            placeholder="Search expenses..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-200 placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:border-indigo-500 transition-colors font-medium"
+            className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-200 placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500 transition-colors font-medium"
           />
         </div>
 
@@ -214,7 +216,7 @@ export default function PersonalExpenses({
           <select
             value={filterMonth}
             onChange={(e) => setFilterMonth(e.target.value)}
-            className="w-full px-3 py-2 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-200 text-xs sm:text-sm focus:outline-none focus:border-indigo-500 transition-colors font-medium cursor-pointer"
+            className="w-full px-3 py-2 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-200 text-sm focus:outline-none focus:border-indigo-500 transition-colors font-medium cursor-pointer"
           >
             <option value="all">All Months</option>
             {distinctMonths.map(m => (
@@ -231,7 +233,7 @@ export default function PersonalExpenses({
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="w-full px-3 py-2 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-200 text-xs sm:text-sm focus:outline-none focus:border-indigo-500 transition-colors font-medium cursor-pointer"
+            className="w-full px-3 py-2 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-200 text-sm focus:outline-none focus:border-indigo-500 transition-colors font-medium cursor-pointer"
           >
             <option value="all">All Categories</option>
             {CATEGORIES.map(c => (
@@ -246,7 +248,7 @@ export default function PersonalExpenses({
           <select
             value={selectedPaymentMode}
             onChange={(e) => setSelectedPaymentMode(e.target.value)}
-            className="w-full px-3 py-2 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-200 text-xs sm:text-sm focus:outline-none focus:border-indigo-500 transition-colors font-medium cursor-pointer"
+            className="w-full px-3 py-2 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-200 text-sm focus:outline-none focus:border-indigo-500 transition-colors font-medium cursor-pointer"
           >
             <option value="all">All Payment Modes</option>
             {PAYMENT_MODES.map(mode => (
@@ -256,9 +258,9 @@ export default function PersonalExpenses({
         </div>
 
         {/* Filter Summary */}
-        <div className="text-right sm:col-span-2 lg:col-span-1">
-          <span className="text-xs text-slate-400 font-medium">Total: </span>
-          <span className="text-sm font-black text-indigo-400 tabular-nums">
+        <div className="flex items-center justify-between sm:justify-end sm:col-span-2 md:col-span-1 lg:col-span-1 pt-1 sm:pt-0">
+          <span className="text-xs text-slate-400 font-medium mr-1.5">Total: </span>
+          <span className="text-sm sm:text-base font-black text-indigo-400 tabular-nums">
             {currencySymbol} {currentTotal.toLocaleString()}
           </span>
         </div>
@@ -290,41 +292,41 @@ export default function PersonalExpenses({
             return (
               <div
                 key={tx.id}
-                className="p-4 rounded-2xl glass-panel-interactive flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                className="p-3.5 sm:p-4 rounded-2xl glass-panel-interactive flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4"
               >
                 {/* Left info */}
-                <div className="flex items-center gap-3.5">
-                  <div className={`p-2.5 rounded-xl border ${catInfo.bg || 'bg-slate-800 text-slate-400'} group-hover:scale-110 transition-transform duration-200`}>
-                    <Receipt className="w-5 h-5" />
+                <div className="flex items-start sm:items-center gap-3 min-w-0">
+                  <div className={`p-2.5 rounded-xl border ${catInfo.bg || 'bg-slate-800 text-slate-400'} group-hover:scale-110 transition-transform duration-200 flex-shrink-0 mt-0.5 sm:mt-0`}>
+                    <Receipt className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h4 className="text-base font-bold text-white tracking-tight">{tx.title}</h4>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                      <h4 className="text-sm sm:text-base font-bold text-white tracking-tight break-words">{tx.title}</h4>
 
                       {/* Payment Mode Badge */}
-                      <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full border ${modeInfo.color}`}>
+                      <span className={`text-[9px] sm:text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full border ${modeInfo.color}`}>
                         {modeInfo.name}
                       </span>
 
                       {/* Category Badge */}
-                      <span className="text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded-full bg-slate-800/80 text-slate-300 border border-slate-700/60">
+                      <span className="text-[9px] sm:text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded-full bg-slate-800/80 text-slate-300 border border-slate-700/60">
                         {catInfo.name}
                       </span>
 
                       {tx.isSharedShare && (
-                        <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                        <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/30">
                           Shared Share
                         </span>
                       )}
                     </div>
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400 mt-1">
+                    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-xs text-slate-400 mt-1">
                       <span className="flex items-center gap-1 text-slate-300 tabular-nums">
                         <Calendar className="w-3.5 h-3.5 text-slate-500" /> {tx.date}
                       </span>
                       {tx.notes && (
                         <>
                           <span>•</span>
-                          <span className="italic text-slate-500">{tx.notes}</span>
+                          <span className="italic text-slate-500 truncate max-w-[200px] sm:max-w-xs">{tx.notes}</span>
                         </>
                       )}
                     </div>
@@ -332,7 +334,7 @@ export default function PersonalExpenses({
                 </div>
 
                 {/* Right amount & actions */}
-                <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4">
+                <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-3 sm:gap-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800/60 sm:border-transparent">
                   <div className="text-left sm:text-right">
                     <span className="text-base sm:text-lg font-black text-white tabular-nums">
                       {currencySymbol} {(Number(tx.amount) || 0).toLocaleString()}
@@ -342,7 +344,7 @@ export default function PersonalExpenses({
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => openEditModal(tx)}
-                      className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition-all cursor-pointer btn-press hover:scale-105 active:scale-90"
+                      className="p-2 sm:p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition-all cursor-pointer btn-press hover:scale-105 active:scale-90"
                       title="Edit Expense"
                     >
                       <Edit3 className="w-4 h-4" />
@@ -353,7 +355,7 @@ export default function PersonalExpenses({
                           onDeleteTransaction(tx.id);
                         }
                       }}
-                      className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-all cursor-pointer btn-press hover:scale-105 active:scale-90"
+                      className="p-2 sm:p-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-all cursor-pointer btn-press hover:scale-105 active:scale-90"
                       title="Delete Expense"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -368,10 +370,13 @@ export default function PersonalExpenses({
 
       {/* Add / Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto modal-overlay">
-          <div className="w-full max-w-lg rounded-2xl glass-modal p-6 shadow-2xl relative modal-sheet my-8 max-h-[90vh] overflow-y-auto border border-slate-800">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
-              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto modal-overlay">
+          <div className="w-full max-w-lg rounded-t-3xl sm:rounded-2xl glass-modal p-5 sm:p-6 shadow-2xl relative modal-sheet sm:my-8 max-h-[92vh] overflow-y-auto border border-slate-800">
+            {/* Mobile Drag Indicator Pill */}
+            <div className="w-12 h-1 bg-slate-700 rounded-full mx-auto mb-3 sm:hidden" />
+
+            <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-800">
+              <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
                 <Receipt className="w-5 h-5 text-indigo-400" />
                 {editingTx ? 'Edit Personal Expense' : 'Add Personal Expense'}
               </h3>
@@ -383,7 +388,7 @@ export default function PersonalExpenses({
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+            <form onSubmit={handleSubmit} className="mt-4 sm:mt-5 space-y-3.5 sm:space-y-4">
               {/* Title / Description */}
               <div>
                 <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
@@ -395,12 +400,12 @@ export default function PersonalExpenses({
                   placeholder="e.g. Canteen Lunch, Books, Uber, Groceries"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500 transition-colors font-medium"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 text-base sm:text-sm focus:outline-none focus:border-indigo-500 transition-colors font-medium"
                 />
               </div>
 
               {/* Amount & Date */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
                     Amount ({currencySymbol}) *
@@ -413,7 +418,7 @@ export default function PersonalExpenses({
                     placeholder="0.00"
                     value={formData.amount}
                     onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500 transition-colors font-bold tabular-nums"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 text-base sm:text-sm focus:outline-none focus:border-indigo-500 transition-colors font-bold tabular-nums"
                   />
                 </div>
 
@@ -426,7 +431,7 @@ export default function PersonalExpenses({
                     required
                     value={formData.date}
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-indigo-500 transition-colors tabular-nums"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white text-base sm:text-sm focus:outline-none focus:border-indigo-500 transition-colors tabular-nums"
                   />
                 </div>
               </div>
@@ -535,22 +540,22 @@ export default function PersonalExpenses({
                   placeholder="Additional context or notes..."
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500 transition-colors"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 text-base sm:text-sm focus:outline-none focus:border-indigo-500 transition-colors"
                 />
               </div>
 
               {/* Actions */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-2.5 sm:gap-3 pt-3.5 sm:pt-4 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold transition-colors cursor-pointer active:scale-95"
+                  className="flex-1 sm:flex-initial text-center px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-semibold transition-colors cursor-pointer active:scale-95"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-indigo-600/30 transition-all cursor-pointer active:scale-95"
+                  className="flex-1 sm:flex-initial text-center px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs sm:text-sm font-semibold shadow-lg shadow-indigo-600/30 transition-all cursor-pointer active:scale-95"
                 >
                   {editingTx ? 'Save Changes' : 'Record Expense'}
                 </button>

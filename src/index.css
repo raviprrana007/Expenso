@@ -146,6 +146,61 @@ html.theme-switching * {
 }
 
 /* --------------------------------------------------------------------------
+   Mobile Dynamics, Safe Areas & Touch Optimization
+   -------------------------------------------------------------------------- */
+button, a, input, select, textarea, [role="button"] {
+  touch-action: manipulation;
+}
+
+.scroll-touch {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.pb-safe {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+}
+.pt-safe {
+  padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
+}
+
+@keyframes sheetSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-sheet {
+  animation: sheetSlideUp 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (max-width: 639px) {
+  .modal-sheet {
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    border-top-left-radius: 1.5rem !important;
+    border-top-right-radius: 1.5rem !important;
+    max-height: 92vh !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 1.25rem !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
    Micro-interactions: Controls (Button, Input, Checkbox)
    -------------------------------------------------------------------------- */
 button:not(:disabled) {

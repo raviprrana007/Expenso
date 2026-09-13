@@ -177,7 +177,12 @@ export default function Dashboard({
     scales: {
       x: {
         grid: { display: false },
-        ticks: { color: isLightMode ? '#64748b' : '#94a3b8', font: { size: 10, family: 'Inter' } }
+        ticks: { 
+          color: isLightMode ? '#64748b' : '#94a3b8', 
+          font: { size: 10, family: 'Inter' },
+          maxTicksLimit: 14,
+          autoSkip: true
+        }
       },
       y: {
         grid: { color: isLightMode ? 'rgba(15, 23, 42, 0.05)' : 'rgba(255, 255, 255, 0.05)' },
@@ -188,48 +193,48 @@ export default function Dashboard({
   };
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-4 sm:space-y-6 pb-6 sm:pb-12">
       {/* Personalized Vault Welcome Header */}
       {settings.userName && (
-        <div className="p-5 rounded-2xl glass-panel bg-gradient-to-r from-indigo-950/40 via-purple-950/20 to-slate-900/60 border border-indigo-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-card">
-          <div className="flex items-center gap-3.5">
+        <div className="p-4 sm:p-5 rounded-2xl glass-panel bg-gradient-to-r from-indigo-950/40 via-purple-950/20 to-slate-900/60 border border-indigo-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-card">
+          <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
             {settings.profilePic ? (
-              <div className="w-11 h-11 rounded-2xl overflow-hidden border border-indigo-500/40 shadow-glow bg-slate-900 flex-shrink-0">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl overflow-hidden border border-indigo-500/40 shadow-glow bg-slate-900 flex-shrink-0">
                 <img src={settings.profilePic} alt={settings.userName} className="w-full h-full object-cover" />
               </div>
             ) : (
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-glow flex-shrink-0">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-base sm:text-lg shadow-glow flex-shrink-0">
                 {settings.userName.charAt(0).toUpperCase()}
               </div>
             )}
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <h1 className="text-base sm:text-lg md:text-xl font-extrabold text-white tracking-tight truncate">
                   Welcome back, {settings.userName}! 👋
                 </h1>
                 {settings.profession && (
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                  <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                     {settings.profession}
                   </span>
                 )}
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                Your private vault is active with a default limit of <span className="font-semibold text-slate-300 tabular-nums">{currencySymbol}{Number(settings.defaultMonthlyLimit || 10000).toLocaleString()}</span>.
+                Private vault active • Limit: <span className="font-semibold text-slate-300 tabular-nums">{currencySymbol}{Number(settings.defaultMonthlyLimit || 10000).toLocaleString()}</span>
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 self-end sm:self-center">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <button
               onClick={onOpenAddPersonal}
-              className="px-3.5 py-1.5 rounded-xl bg-indigo-600/25 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/30 text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
+              className="flex-1 sm:flex-initial justify-center px-3.5 py-2 sm:py-1.5 rounded-xl bg-indigo-600/25 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/30 text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
             >
               <PlusCircle className="w-3.5 h-3.5" />
               <span>Add Expense</span>
             </button>
             <button
               onClick={onOpenAddShared}
-              className="px-3.5 py-1.5 rounded-xl bg-purple-600/25 hover:bg-purple-600/40 text-purple-300 border border-purple-500/30 text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
+              className="flex-1 sm:flex-initial justify-center px-3.5 py-2 sm:py-1.5 rounded-xl bg-purple-600/25 hover:bg-purple-600/40 text-purple-300 border border-purple-500/30 text-xs font-semibold shadow-sm transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
             >
               <Users className="w-3.5 h-3.5" />
               <span>Split Bill</span>
@@ -239,16 +244,16 @@ export default function Dashboard({
       )}
 
       {/* Month Selector Bar */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl glass-panel">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-3.5 sm:p-4 rounded-2xl glass-panel">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-sm">
-            <Calendar className="w-5 h-5" />
+          <div className="p-2 sm:p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-sm flex-shrink-0">
+            <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white tracking-tight">
+            <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
               {BudgetCalculator.formatMonthName(selectedMonth)}
             </h2>
-            <p className="text-xs text-slate-400">Monthly Spending & Obligations Overview</p>
+            <p className="text-[11px] sm:text-xs text-slate-400">Monthly Spending & Obligations Overview</p>
           </div>
         </div>
 
@@ -257,13 +262,14 @@ export default function Dashboard({
             onClick={handlePrevMonth}
             className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-all cursor-pointer active:scale-90"
             title="Previous Month"
+            aria-label="Previous Month"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
 
           <button
             onClick={handleCurrentMonth}
-            className="px-3 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-800 text-slate-200 text-xs font-semibold transition-all shadow-sm cursor-pointer active:scale-95"
+            className="flex-1 sm:flex-initial text-center px-3 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-800 text-slate-200 text-xs font-semibold transition-all shadow-sm cursor-pointer active:scale-95"
           >
             Current Month
           </button>
@@ -272,6 +278,7 @@ export default function Dashboard({
             onClick={handleNextMonth}
             className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-all cursor-pointer active:scale-90"
             title="Next Month"
+            aria-label="Next Month"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -279,9 +286,9 @@ export default function Dashboard({
       </div>
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 stagger-items">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 stagger-items">
         {/* Card 1: Monthly Budget Limit */}
-        <div className="p-5 rounded-2xl glass-panel-interactive relative overflow-hidden">
+        <div className="p-4 sm:p-5 rounded-2xl glass-panel-interactive relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Monthly Limit</span>
             <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-sm group-hover:scale-110 transition-transform">
@@ -306,7 +313,7 @@ export default function Dashboard({
         </div>
 
         {/* Card 2: Total Spent This Month */}
-        <div className="p-5 rounded-2xl glass-panel-interactive relative overflow-hidden">
+        <div className="p-4 sm:p-5 rounded-2xl glass-panel-interactive relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Personal Spending</span>
             <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-sm">
@@ -314,7 +321,7 @@ export default function Dashboard({
             </div>
           </div>
           <div className="mt-3">
-            <div className="text-2xl font-black text-white tabular-nums tracking-tight">
+            <div className="text-xl sm:text-2xl font-black text-white tabular-nums tracking-tight break-words">
               {currencySymbol} {budgetStats.totalSpent.toLocaleString()}
             </div>
             <div className="mt-2 text-[11px] text-slate-400">
@@ -324,7 +331,7 @@ export default function Dashboard({
         </div>
 
         {/* Card 3: Remaining / Overspent Status */}
-        <div className={`p-5 rounded-2xl glass-panel-interactive relative overflow-hidden border ${
+        <div className={`p-4 sm:p-5 rounded-2xl glass-panel-interactive relative overflow-hidden border ${
           budgetStats.isOverspent
             ? 'border-rose-500/40 bg-rose-950/20 shadow-glow-danger'
             : 'border-emerald-500/30 bg-emerald-950/20'
@@ -342,7 +349,7 @@ export default function Dashboard({
             </div>
           </div>
           <div className="mt-3">
-            <div className={`text-2xl font-black tabular-nums tracking-tight ${budgetStats.isOverspent ? 'text-rose-400' : 'text-emerald-400'}`}>
+            <div className={`text-xl sm:text-2xl font-black tabular-nums tracking-tight break-words ${budgetStats.isOverspent ? 'text-rose-400' : 'text-emerald-400'}`}>
               {budgetStats.isOverspent
                 ? `${currencySymbol} ${budgetStats.overspentAmount.toLocaleString()} over`
                 : `${currencySymbol} ${budgetStats.remainingAmount.toLocaleString()}`}
@@ -370,7 +377,7 @@ export default function Dashboard({
         </div>
 
         {/* Card 4: Net Financial Obligations (Dues & Owes) */}
-        <div className="p-5 rounded-2xl glass-panel-interactive relative overflow-hidden">
+        <div className="p-4 sm:p-5 rounded-2xl glass-panel-interactive relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Net Obligations</span>
             <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 shadow-sm">
@@ -378,7 +385,7 @@ export default function Dashboard({
             </div>
           </div>
           <div className="mt-3">
-            <div className={`text-2xl font-black tabular-nums tracking-tight ${
+            <div className={`text-xl sm:text-2xl font-black tabular-nums tracking-tight break-words ${
               owesDuesSummary.netBalance > 0
                 ? 'text-emerald-400'
                 : owesDuesSummary.netBalance < 0
@@ -404,9 +411,9 @@ export default function Dashboard({
       </div>
 
       {/* Visual Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Category Doughnut Chart */}
-        <div className="p-6 rounded-2xl glass-panel flex flex-col justify-between">
+        <div className="p-4 sm:p-6 rounded-2xl glass-panel flex flex-col justify-between">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <PieChartIcon className="w-4 h-4 text-indigo-400" />
@@ -415,7 +422,7 @@ export default function Dashboard({
             <span className="text-xs text-slate-400">{BudgetCalculator.formatMonthName(selectedMonth)}</span>
           </div>
 
-          <div className="relative h-64 flex items-center justify-center">
+          <div className="relative h-56 sm:h-64 flex items-center justify-center">
             <Doughnut data={doughnutData} options={doughnutOptions} />
           </div>
 
@@ -430,7 +437,7 @@ export default function Dashboard({
         </div>
 
         {/* Daily Spending Trend Chart */}
-        <div className="p-6 rounded-2xl glass-panel lg:col-span-2 flex flex-col justify-between">
+        <div className="p-4 sm:p-6 rounded-2xl glass-panel lg:col-span-2 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-indigo-400" />
@@ -439,11 +446,11 @@ export default function Dashboard({
             <span className="text-xs text-slate-400">Day 1 to {daysInMonth}</span>
           </div>
 
-          <div className="relative h-64">
+          <div className="relative h-56 sm:h-64">
             <Bar data={barData} options={barOptions} />
           </div>
 
-          <div className="mt-4 pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+          <div className="mt-4 pt-4 border-t border-slate-800/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 text-xs text-slate-400">
             <span>Daily spending updates dynamically based on transaction dates.</span>
             <span className="font-semibold text-slate-200 tabular-nums">
               Avg Daily: {currencySymbol} {Math.round(budgetStats.totalSpent / daysInMonth).toLocaleString()}
@@ -453,9 +460,9 @@ export default function Dashboard({
       </div>
 
       {/* Today's Transactions & Quick Actions Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Today's Activity Card */}
-        <div className="p-6 rounded-2xl glass-panel lg:col-span-2">
+        <div className="p-4 sm:p-6 rounded-2xl glass-panel lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-amber-400" />
@@ -495,19 +502,21 @@ export default function Dashboard({
                       <div className={`p-2 rounded-xl border ${catInfo.bg || 'bg-slate-800 text-slate-400'}`}>
                         <Receipt className="w-4 h-4" />
                       </div>
-                      <div>
-                        <p className="text-sm font-semibold text-white">{tx.title || 'Personal Expense'}</p>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-white truncate max-w-[140px] xs:max-w-[200px] sm:max-w-xs md:max-w-none">
+                          {tx.title || 'Personal Expense'}
+                        </p>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${modeInfo.color}`}>
                             {modeInfo.name}
                           </span>
-                          <span className="text-[10px] text-slate-400">
+                          <span className="text-[10px] text-slate-400 truncate">
                             • {catInfo.name}
                           </span>
                         </div>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right flex-shrink-0">
                       <p className="text-sm font-bold text-white tabular-nums">
                         {currencySymbol} {(Number(tx.amount) || 0).toLocaleString()}
                       </p>
@@ -520,7 +529,7 @@ export default function Dashboard({
         </div>
 
         {/* Quick Actions & Top Obligations */}
-        <div className="p-6 rounded-2xl glass-panel flex flex-col justify-between">
+        <div className="p-4 sm:p-6 rounded-2xl glass-panel flex flex-col justify-between">
           <div>
             <h3 className="font-bold text-white text-base mb-3">Quick Actions</h3>
             <div className="space-y-2">
