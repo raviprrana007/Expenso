@@ -182,16 +182,17 @@ html.theme-switching * {
   border: 1px solid var(--border);
   box-shadow: var(--shadow-1);
   transition:
-    transform var(--duration-base) var(--ease-spring),
-    background var(--duration-base) var(--ease-out),
-    border-color var(--duration-base) var(--ease-out),
-    box-shadow var(--duration-base) var(--ease-out);
+    transform 220ms var(--ease-spring),
+    background-color 220ms var(--ease-out),
+    border-color 220ms var(--ease-out),
+    box-shadow 220ms var(--ease-spring);
+  will-change: transform, box-shadow;
 }
 
 .glass-panel-interactive:hover {
   background: var(--surface-1);
   border-color: var(--primary-border);
-  transform: translateY(-1.5px);
+  transform: translateY(-2px);
   box-shadow: var(--shadow-2), var(--glow-primary);
 }
 
@@ -252,13 +253,23 @@ button, a, input, select, textarea, [role="button"] {
   }
 }
 
+@keyframes modalOverlayEnter {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 .modal-sheet {
-  animation: modalDesktopEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: modalDesktopEnter 240ms var(--ease-spring) forwards;
+  will-change: transform, opacity;
 }
 
 @media (max-width: 639px) {
   .modal-sheet {
-    animation: modalMobileSheetSlide 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+    animation: modalMobileSheetSlide 280ms var(--ease-smooth) forwards !important;
     border-bottom-left-radius: 0 !important;
     border-bottom-right-radius: 0 !important;
     border-top-left-radius: 1.5rem !important;
@@ -275,16 +286,33 @@ button, a, input, select, textarea, [role="button"] {
    -------------------------------------------------------------------------- */
 button:not(:disabled) {
   transition:
-    transform var(--duration-micro) var(--ease-spring),
-    background-color var(--duration-fast) var(--ease-out),
-    border-color var(--duration-fast) var(--ease-out),
-    color var(--duration-fast) var(--ease-out),
-    box-shadow var(--duration-fast) var(--ease-out),
-    opacity var(--duration-micro) var(--ease-out);
+    transform 160ms var(--ease-spring),
+    background-color 180ms var(--ease-out),
+    border-color 180ms var(--ease-out),
+    color 180ms var(--ease-out),
+    box-shadow 200ms var(--ease-out),
+    opacity 160ms var(--ease-out);
 }
 
 button:not(:disabled):active {
-  transform: scale(0.975);
+  transform: scale(0.972);
+}
+
+.btn-press {
+  transition:
+    transform 160ms var(--ease-spring),
+    background-color 180ms var(--ease-out),
+    border-color 180ms var(--ease-out),
+    box-shadow 200ms var(--ease-out);
+  will-change: transform;
+}
+
+.btn-press:hover {
+  transform: translateY(-1px);
+}
+
+.btn-press:active {
+  transform: scale(0.968) translateY(0.5px);
 }
 
 button:disabled,
@@ -339,37 +367,33 @@ input[type='checkbox']:active {
 @keyframes ui-page-glide {
   0% {
     opacity: 0;
-    transform: translateY(14px) scale(0.992);
-    filter: blur(4px);
+    transform: translateY(8px);
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
+    transform: translateY(0);
   }
 }
 
 @keyframes ui-card-stagger {
   0% {
     opacity: 0;
-    transform: translateY(18px) scale(0.985);
+    transform: translateY(8px);
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
 @keyframes ui-sheet-spring {
   0% {
     opacity: 0;
-    transform: translateY(28px) scale(0.95);
-    filter: blur(6px);
+    transform: translateY(20px) scale(0.96);
   }
   100% {
     opacity: 1;
     transform: translateY(0) scale(1);
-    filter: blur(0);
   }
 }
 
@@ -412,26 +436,29 @@ input[type='checkbox']:active {
 }
 
 .page-enter {
-  animation: ui-page-glide 340ms var(--ease-spring) both;
+  animation: ui-page-glide 240ms var(--ease-spring) forwards;
+  will-change: opacity, transform;
 }
 
 .modal-overlay {
-  animation: ui-fade var(--duration-base) var(--ease-out) both;
+  animation: modalOverlayEnter 220ms var(--ease-out) forwards;
+  will-change: opacity;
 }
 
 /* Staggered entry for grids, transaction lists, and cards */
 .stagger-items > * {
-  animation: ui-card-stagger 360ms var(--ease-spring) both;
+  animation: ui-card-stagger 240ms var(--ease-spring) both;
+  will-change: opacity, transform;
 }
-.stagger-items > *:nth-child(1) { animation-delay: 15ms; }
-.stagger-items > *:nth-child(2) { animation-delay: 50ms; }
-.stagger-items > *:nth-child(3) { animation-delay: 85ms; }
-.stagger-items > *:nth-child(4) { animation-delay: 120ms; }
-.stagger-items > *:nth-child(5) { animation-delay: 155ms; }
-.stagger-items > *:nth-child(6) { animation-delay: 190ms; }
-.stagger-items > *:nth-child(7) { animation-delay: 225ms; }
-.stagger-items > *:nth-child(8) { animation-delay: 260ms; }
-.stagger-items > *:nth-child(n + 9) { animation-delay: 295ms; }
+.stagger-items > *:nth-child(1) { animation-delay: 10ms; }
+.stagger-items > *:nth-child(2) { animation-delay: 30ms; }
+.stagger-items > *:nth-child(3) { animation-delay: 50ms; }
+.stagger-items > *:nth-child(4) { animation-delay: 70ms; }
+.stagger-items > *:nth-child(5) { animation-delay: 90ms; }
+.stagger-items > *:nth-child(6) { animation-delay: 110ms; }
+.stagger-items > *:nth-child(7) { animation-delay: 130ms; }
+.stagger-items > *:nth-child(8) { animation-delay: 150ms; }
+.stagger-items > *:nth-child(n + 9) { animation-delay: 170ms; }
 
 /* Linear / Stripe style CTA Shimmer Light-Sweep */
 .btn-shimmer {

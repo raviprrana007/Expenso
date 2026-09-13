@@ -80,14 +80,6 @@ export default function App() {
     }
   }, [settings.theme]);
 
-  const mainRef = useRef(null);
-  useEffect(() => {
-    const el = mainRef.current;
-    if (!el) return;
-    el.classList.remove('page-enter');
-    void el.offsetWidth;
-    el.classList.add('page-enter');
-  }, [activeTab]);
 
   // Initialize data on mount
   useEffect(() => {
@@ -499,7 +491,7 @@ export default function App() {
       />
 
       {/* Main Content Body with Smooth Spring Page Transitions */}
-      <main ref={mainRef} className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-10 sm:pb-12">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-10 sm:pb-12">
         <div key={activeTab} className="page-enter">
           {activeTab === 'dashboard' && (
             <Dashboard
