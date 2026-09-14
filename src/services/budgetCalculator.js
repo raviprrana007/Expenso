@@ -50,91 +50,59 @@ export const BudgetCalculator = {
     return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   },
 
-  // Calculate monthly metrics with exact Rollover Rules (Rule 5 & 6)
-  calculateMonthlyBudget(monthKey, transactions, settings) {
-    const defaultLimit = settings.defaultMonthlyLimit || 10000;
-    
-    // Find all distinct months from transactions and configured settings
-    const allMonths = new Set();
-    transactions.forEach(tx => {
-      const k = this.getMonthKey(tx.date);
-      if (k) allMonths.add(k);
-    });
-    if (settings.monthlyLimits) {
-      Object.keys(settings.monthlyLimits).forEach(k => allMonths.add(k));
-    }
-    allMonths.add(monthKey);
+  // Calculate monthly metrics with exact independent Monthly Limit rules:
+  // 1. Current Month Limit takes priority over Monthly Limit for that month if set.
+  // 2. A new month starts with the Monthly Limit value by default.
+  // 3. Previous month's unused amount is NOT carried forward.
+  // 4. Previous month's overspending is NOT deducted from the next month.
+  // 5. Changing Current Month Limit recalculates that month immediately.
+  // 6. Changing Monthly Limit affects future/un-overridden months without overriding explicit month limits.
+  calculateMonthlyBudget(monthKey, transactions, settings = {}) {
+    const defaultLimit = (settings.defaultMonthlyLimit !== undefined && settings.defaultMonthlyLimit !== null && !isNaN(Number(settings.defaultMonthlyLimit)))
+      ? Number(settings.defaultMonthlyLimit)
+      : 10000;
 
-    // Also ensure previous month is included to calculate rollover correctly
-    const prevKey = this.getPrevMonthKey(monthKey);
-    allMonths.add(prevKey);
+    // Check if Current Month Limit is explicitly configured for this month
+    const hasCurrentMonthLimit = Boolean(
+      settings.monthlyLimits &&
+      settings.monthlyLimits[monthKey] !== undefined &&
+      settings.monthlyLimits[monthKey] !== null &&
+      settings.monthlyLimits[monthKey] !== '' &&
+      !isNaN(Number(settings.monthlyLimits[monthKey]))
+    );
 
-    const sortedMonths = Array.from(allMonths).sort();
+    // Priority rule: If Current Month Limit is set, it always takes priority over Monthly Limit for that month.
+    const effectiveLimit = hasCurrentMonthLimit
+      ? Number(settings.monthlyLimits[monthKey])
+      : defaultLimit;
 
-    // Compute chain of budgets up to the target monthKey
-    const monthStats = {};
-    let runningDefaultLimit = defaultLimit;
+    // Personal expense total for this month only
+    const safeTxList = Array.isArray(transactions) ? transactions : [];
+    const monthTransactions = safeTxList.filter(
+      tx => tx && tx.date && this.getMonthKey(tx.date) === monthKey
+    );
+    const totalSpent = monthTransactions.reduce((acc, tx) => acc + (Number(tx.amount) || 0), 0);
 
-    for (const m of sortedMonths) {
-      // 1. Personal expense total for this month
-      const monthTransactions = transactions.filter(tx => this.getMonthKey(tx.date) === m);
-      const totalSpent = monthTransactions.reduce((acc, tx) => acc + (Number(tx.amount) || 0), 0);
+    // Completely independent month calculation (no carryover, no rollover deduction)
+    const isOverspent = totalSpent > effectiveLimit;
+    const overspentAmount = isOverspent ? totalSpent - effectiveLimit : 0;
+    const remainingAmount = isOverspent ? 0 : effectiveLimit - totalSpent;
+    const percentageUsed = effectiveLimit > 0
+      ? Math.min(Math.round((totalSpent / effectiveLimit) * 100), 999)
+      : (totalSpent > 0 ? 100 : 0);
 
-      // 2. Base user-set limit
-      let baseLimit = runningDefaultLimit;
-      if (settings.monthlyLimits && settings.monthlyLimits[m] !== undefined && settings.monthlyLimits[m] !== null) {
-        baseLimit = Number(settings.monthlyLimits[m]);
-        runningDefaultLimit = baseLimit; // Carry forward updated limit
-      }
-
-      // 3. Rollover from previous month
-      const prevM = this.getPrevMonthKey(m);
-      let rolloverDeduction = 0;
-      if (monthStats[prevM]) {
-        const prevStat = monthStats[prevM];
-        if (prevStat.isOverspent) {
-          // Overspent in previous month is deducted from current month's starting limit
-          rolloverDeduction = prevStat.overspentAmount;
-        }
-        // Unused budget is NEVER added to next month (Rule 6)
-      }
-
-      // 4. Effective limit for this month
-      const effectiveLimit = Math.max(0, baseLimit - rolloverDeduction);
-      const remainingAmount = effectiveLimit - totalSpent;
-      const isOverspent = totalSpent > effectiveLimit;
-      const overspentAmount = isOverspent ? totalSpent - effectiveLimit : 0;
-      const percentageUsed = effectiveLimit > 0 ? Math.min(Math.round((totalSpent / effectiveLimit) * 100), 999) : (totalSpent > 0 ? 100 : 0);
-
-      monthStats[m] = {
-        monthKey: m,
-        baseLimit,
-        rolloverDeduction,
-        effectiveLimit,
-        totalSpent,
-        remainingAmount: isOverspent ? 0 : remainingAmount,
-        isOverspent,
-        overspentAmount,
-        percentageUsed,
-        transactionCount: monthTransactions.length
-      };
-
-      if (m === monthKey) {
-        break; // We have computed up to the requested month
-      }
-    }
-
-    return monthStats[monthKey] || {
+    return {
       monthKey,
       baseLimit: defaultLimit,
+      effectiveLimit,
+      isCustomMonthLimit: hasCurrentMonthLimit,
       rolloverDeduction: 0,
-      effectiveLimit: defaultLimit,
-      totalSpent: 0,
-      remainingAmount: defaultLimit,
-      isOverspent: false,
-      overspentAmount: 0,
-      percentageUsed: 0,
-      transactionCount: 0
+      totalSpent,
+      remainingAmount,
+      isOverspent,
+      overspentAmount,
+      percentageUsed,
+      transactionCount: monthTransactions.length
     };
   },
 

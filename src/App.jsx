@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Plus } from 'lucide-react';
 import Navbar from './components/Navbar';
 import Dashboard from './components/Dashboard';
 import PersonalExpenses from './components/PersonalExpenses';
@@ -12,6 +13,14 @@ import QuickAddModal from './components/QuickAddModal';
 import VaultLogin from './components/VaultLogin';
 import { StorageService } from './services/storage';
 import { BudgetCalculator } from './services/budgetCalculator';
+import { updateNativeStatusBar } from './utils/statusBar';
+import { syncDailyReminder, sendBackupCompleteNotification } from './utils/notificationService';
+import { App as CapacitorApp } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
+
+const TABS = ['dashboard', 'personal', 'shared', 'owes_dues', 'people', 'archive'];
 
 export default function App() {
   // Vault Authentication State
@@ -19,6 +28,120 @@ export default function App() {
 
   // Navigation & Month Selection
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [slideDirection, setSlideDirection] = useState('left');
+  const touchStartRef = useRef(null);
+  const touchLatestRef = useRef(null);
+
+  const handleSwitchTab = (newTab, forcedDirection = null) => {
+    if (newTab === activeTab) return;
+    const oldIdx = TABS.indexOf(activeTab);
+    const newIdx = TABS.indexOf(newTab);
+    if (forcedDirection) {
+      setSlideDirection(forcedDirection);
+    } else if (newIdx !== -1 && oldIdx !== -1) {
+      if (oldIdx === TABS.length - 1 && newIdx === 0) {
+        setSlideDirection('left');
+      } else if (oldIdx === 0 && newIdx === TABS.length - 1) {
+        setSlideDirection('right');
+      } else {
+        setSlideDirection(newIdx > oldIdx ? 'left' : 'right');
+      }
+    }
+    setActiveTab(newTab);
+  };
+
+  const handleTouchStart = (e) => {
+    if (isQuickAddOpen) return;
+    const touch = e.touches[0];
+    const target = e.target;
+    // Don't initiate swipe gesture if user is touching inputs, scrollable elements, or no-swipe containers
+    if (target && target.closest && target.closest('input, textarea, select, [data-no-swipe], .overflow-x-auto, .overflow-x-scroll, canvas, table')) {
+      touchStartRef.current = null;
+      return;
+    }
+    touchStartRef.current = {
+      x: touch.clientX,
+      y: touch.clientY,
+      time: Date.now(),
+      target: e.target
+    };
+    touchLatestRef.current = {
+      x: touch.clientX,
+      y: touch.clientY
+    };
+  };
+
+  const handleTouchMove = (e) => {
+    if (!touchStartRef.current || !e.touches || e.touches.length === 0) return;
+    touchLatestRef.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY
+    };
+  };
+
+  const processSwipe = (finalTouch) => {
+    if (!touchStartRef.current || isQuickAddOpen) return;
+    const start = touchStartRef.current;
+    const endX = finalTouch ? finalTouch.clientX : (touchLatestRef.current?.x ?? start.x);
+    const endY = finalTouch ? finalTouch.clientY : (touchLatestRef.current?.y ?? start.y);
+
+    touchStartRef.current = null;
+    touchLatestRef.current = null;
+
+    const deltaX = endX - start.x;
+    const deltaY = endY - start.y;
+    const elapsed = Date.now() - start.time;
+
+    // Prevent swipe conflict if user is interacting with inputs, selects, or horizontally scrollable areas
+    const target = start.target;
+    if (target && target.closest) {
+      if (target.closest('input:not([type="button"]):not([type="checkbox"]):not([type="radio"]), textarea, select, [data-no-swipe], .overflow-x-auto, .overflow-x-scroll, canvas, table')) {
+        return;
+      }
+      // Also inspect ancestor chain for any horizontally scrollable container
+      let el = target;
+      while (el && el !== document.body && el !== document.documentElement) {
+        if (el.scrollWidth > el.clientWidth + 4) {
+          const style = window.getComputedStyle(el);
+          if (style.overflowX === 'auto' || style.overflowX === 'scroll') {
+            return;
+          }
+        }
+        el = el.parentElement;
+      }
+    }
+
+    // Minimum 35px horizontal movement, predominantly horizontal (|dx| > 1.15 * |dy|), within 600ms
+    if (Math.abs(deltaX) >= 35 && Math.abs(deltaX) > Math.abs(deltaY) * 1.15 && elapsed < 600) {
+      const curIdx = TABS.indexOf(activeTab);
+      if (curIdx === -1) {
+        handleSwitchTab('dashboard', deltaX < 0 ? 'left' : 'right');
+        return;
+      }
+
+      if (deltaX < 0) {
+        // Swiped Left -> Move forward in infinite circular loop
+        const nextIdx = (curIdx + 1) % TABS.length;
+        handleSwitchTab(TABS[nextIdx], 'left');
+      } else {
+        // Swiped Right -> Move backward in infinite circular loop
+        const prevIdx = (curIdx - 1 + TABS.length) % TABS.length;
+        handleSwitchTab(TABS[prevIdx], 'right');
+      }
+    }
+  };
+
+  const handleTouchEnd = (e) => {
+    if (e.changedTouches && e.changedTouches.length > 0) {
+      processSwipe(e.changedTouches[0]);
+    } else {
+      processSwipe(null);
+    }
+  };
+
+  const handleTouchCancel = () => {
+    processSwipe(null);
+  };
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const today = new Date();
     return BudgetCalculator.getMonthKey(today);
@@ -66,27 +189,57 @@ export default function App() {
 
     const root = document.documentElement;
     const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    root.classList.add('theme-switching');
-    const clearSwitching = () => {
-      window.setTimeout(() => root.classList.remove('theme-switching'), 300);
-    };
 
     if (!prefersReduced && typeof document.startViewTransition === 'function') {
-      const transition = document.startViewTransition(applyTheme);
-      transition.finished.finally(clearSwitching);
+      try {
+        document.startViewTransition(() => {
+          applyTheme();
+        });
+      } catch (e) {
+        applyTheme();
+      }
     } else {
+      root.classList.add('theme-switching');
       applyTheme();
-      clearSwitching();
+      window.setTimeout(() => root.classList.remove('theme-switching'), 400);
     }
+    // Update Android / iOS native status bar to match theme
+    updateNativeStatusBar(settings.theme || 'dark');
   }, [settings.theme]);
 
+  // Handle Android hardware back button
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    let cleanupListener;
+    CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+      if (isQuickAddOpen) {
+        setIsQuickAddOpen(false);
+      } else if (isReminderBannerOpen) {
+        setIsReminderBannerOpen(false);
+      } else if (activeTab !== 'dashboard') {
+        handleSwitchTab('dashboard');
+      } else {
+        CapacitorApp.minimizeApp();
+      }
+    }).then((handle) => {
+      cleanupListener = handle;
+    });
+
+    return () => {
+      if (cleanupListener) cleanupListener.remove();
+    };
+  }, [isQuickAddOpen, isReminderBannerOpen, activeTab]);
 
   // Initialize data on mount
   useEffect(() => {
     if (isVaultUnlocked) {
       const loadedSettings = syncStateFromStorage();
 
-      // Check 9 PM daily reminder condition
+      // Sync Android native daily notification reminder
+      syncDailyReminder(loadedSettings.reminderTime, loadedSettings.reminderEnabled !== false);
+
+      // Check in-app reminder banner condition
       const checkReminder = () => {
         const now = new Date();
         const currentHours = now.getHours();
@@ -397,18 +550,65 @@ export default function App() {
   };
 
   // --- Handlers: Settings, Export, Import ---
-  const handleExportData = () => {
-    const data = StorageService.exportAllData();
-    const jsonStr = JSON.stringify(data, null, 2);
-    const blob = new Blob([jsonStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `Expenso_Backup_${settings.userName ? settings.userName.replace(/\s+/g, '_') : 'Vault'}_${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const handleExportData = async () => {
+    try {
+      const data = StorageService.exportAllData();
+      const jsonStr = JSON.stringify(data, null, 2);
+      const filename = `Expenso_Backup_${settings.userName ? settings.userName.replace(/\s+/g, '_') : 'Vault'}_${new Date().toISOString().split('T')[0]}.json`;
+
+      if (Capacitor.isNativePlatform()) {
+        let savedUri = null;
+        try {
+          const res = await Filesystem.writeFile({
+            path: filename,
+            data: jsonStr,
+            directory: Directory.Documents,
+            encoding: Encoding.UTF8,
+            recursive: true
+          });
+          savedUri = res.uri;
+        } catch (docErr) {
+          console.warn('Saving to Documents failed, falling back to Cache:', docErr);
+          const res = await Filesystem.writeFile({
+            path: filename,
+            data: jsonStr,
+            directory: Directory.Cache,
+            encoding: Encoding.UTF8,
+            recursive: true
+          });
+          savedUri = res.uri;
+        }
+
+        if (savedUri) {
+          try {
+            await Share.share({
+              title: 'Expenso Backup',
+              text: `Backup of your Expenso vault (${filename})`,
+              url: savedUri,
+              dialogTitle: 'Save or Share JSON Backup'
+            });
+          } catch (shareErr) {
+            console.warn('Share sheet closed or unavailable:', shareErr);
+          }
+        }
+
+        await sendBackupCompleteNotification(filename);
+      } else {
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        await sendBackupCompleteNotification(filename);
+      }
+    } catch (err) {
+      console.error('Failed to export JSON backup:', err);
+      alert('Failed to export JSON backup: ' + (err.message || err));
+    }
   };
 
   const handleImportData = (json) => {
@@ -457,7 +657,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-indigo-500/40 relative overflow-x-hidden">
+    <div className="h-full w-full flex flex-col bg-slate-950 text-slate-100 selection:bg-indigo-500/40 relative overflow-hidden">
       {/* Ambient background glow orbs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10" aria-hidden="true">
         <div className="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-indigo-500/10 blur-[120px] ambient-orb-1" />
@@ -465,34 +665,44 @@ export default function App() {
         <div className="absolute -bottom-40 left-1/3 w-96 h-96 rounded-full bg-teal-500/10 blur-[120px] ambient-orb-1" />
       </div>
 
-      {/* 9:00 PM Reminder Banner (Rule 4) */}
-      <ReminderBanner
-        isOpen={isReminderBannerOpen}
-        onDismiss={handleDismissReminder}
-        onOpenAddExpense={() => {
-          setIsReminderBannerOpen(false);
-          setIsQuickAddOpen(true);
-        }}
-      />
+      {/* Fixed App Header: Outside the scrollable container */}
+      <div className="flex-shrink-0 w-full z-30">
+        {/* 9:00 PM Reminder Banner (Rule 4) */}
+        <ReminderBanner
+          isOpen={isReminderBannerOpen}
+          onDismiss={handleDismissReminder}
+          onOpenAddExpense={() => {
+            setIsReminderBannerOpen(false);
+            setIsQuickAddOpen(true);
+          }}
+        />
 
-      {/* Top Navigation */}
-      <Navbar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        onOpenQuickAdd={() => setIsQuickAddOpen(true)}
-        currencySymbol={settings.currencySymbol || '₹'}
-        reminderTriggered={isReminderBannerOpen}
-        userName={settings.userName}
-        profession={settings.profession}
-        profilePic={settings.profilePic}
-        theme={settings.theme || 'dark'}
-        onToggleTheme={handleToggleTheme}
-        onLockVault={handleLockVault}
-      />
+        {/* Top Navigation */}
+        <Navbar
+          activeTab={activeTab}
+          setActiveTab={handleSwitchTab}
+          onOpenQuickAdd={() => setIsQuickAddOpen(true)}
+          currencySymbol={settings.currencySymbol || '₹'}
+          reminderTriggered={isReminderBannerOpen}
+          userName={settings.userName}
+          profession={settings.profession}
+          profilePic={settings.profilePic}
+          theme={settings.theme || 'dark'}
+          onToggleTheme={handleToggleTheme}
+          onLockVault={handleLockVault}
+        />
+      </div>
 
-      {/* Main Content Body with Smooth Spring Page Transitions */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-10 sm:pb-12">
-        <div key={activeTab} className="page-enter">
+      {/* Dedicated Scrollable Content Container: Only the dashboard body scrolls */}
+      <main
+        className="flex-1 w-full overflow-y-auto overscroll-y-contain custom-scrollbar swipe-container"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchCancel}
+      >
+        <div className="max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-24 sm:pb-28">
+          <div key={activeTab} className={slideDirection === 'left' ? 'page-slide-left' : 'page-slide-right'}>
           {activeTab === 'dashboard' && (
             <Dashboard
               selectedMonth={selectedMonth}
@@ -502,8 +712,8 @@ export default function App() {
               people={people}
               settings={settings}
               onOpenAddPersonal={() => setIsQuickAddOpen(true)}
-              onOpenAddShared={() => setActiveTab('shared')}
-              onNavigateTab={setActiveTab}
+              onOpenAddShared={() => handleSwitchTab('shared')}
+              onNavigateTab={handleSwitchTab}
               onLockVault={handleLockVault}
             />
           )}
@@ -579,8 +789,20 @@ export default function App() {
               onLockVault={handleLockVault}
             />
           )}
+          </div>
         </div>
       </main>
+
+      {/* Floating Action Button (FAB) for Quick Add at bottom right */}
+      <button
+        type="button"
+        onClick={() => setIsQuickAddOpen(true)}
+        className="fixed bottom-6 right-5 sm:bottom-8 sm:right-8 z-40 w-14 h-14 rounded-full bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-2xl shadow-indigo-600/50 flex items-center justify-center hover:scale-105 active:scale-90 transition-all duration-200 cursor-pointer border border-white/20 focus:outline-none group"
+        title="Add Expense or Split"
+        aria-label="Add Expense"
+      >
+        <Plus className="w-7 h-7 stroke-[2.5] transition-transform duration-300 group-hover:rotate-90 group-active:rotate-90" />
+      </button>
 
       {/* Global Quick Add Modal */}
       <QuickAddModal

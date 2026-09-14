@@ -14,10 +14,12 @@ import {
   Camera,
   Image as ImageIcon,
   Sun,
-  Moon
+  Moon,
+  Check
 } from 'lucide-react';
 import { CURRENCIES, PROFESSIONS } from '../types/constants';
 import { BudgetCalculator } from '../services/budgetCalculator';
+import { syncDailyReminder, sendTestNotification, isNative } from '../utils/notificationService';
 
 export default function SettingsBackup({
   settings,
@@ -43,6 +45,8 @@ export default function SettingsBackup({
   const [reminderEnabled, setReminderEnabled] = useState(settings.reminderEnabled !== false);
   const [reminderTime, setReminderTime] = useState(settings.reminderTime || '21:00');
   const [saveMessage, setSaveMessage] = useState('');
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportSuccess, setExportSuccess] = useState(false);
 
   const fileInputRef = useRef(null);
   const profilePicInputRef = useRef(null);
@@ -55,7 +59,14 @@ export default function SettingsBackup({
     setTheme(settings.theme || 'dark');
     setDefaultLimit(settings.defaultMonthlyLimit || 10000);
     setCurrency(settings.currency || 'INR');
-  }, [settings]);
+    setReminderEnabled(settings.reminderEnabled !== false);
+    setReminderTime(settings.reminderTime || '21:00');
+    setCurrentMonthLimit(
+      settings.monthlyLimits?.[selectedMonth] !== undefined
+        ? settings.monthlyLimits[selectedMonth]
+        : (settings.defaultMonthlyLimit || 10000)
+    );
+  }, [settings, selectedMonth]);
 
   const handleSelectTheme = (newTheme) => {
     setTheme(newTheme);
@@ -106,6 +117,15 @@ export default function SettingsBackup({
   const handleSaveGeneral = (e) => {
     e.preventDefault();
     const currObj = CURRENCIES.find(c => c.code === currency);
+    const updatedMonthlyLimits = { ...(settings.monthlyLimits || {}) };
+
+    // Priority rule: If Current Month Limit is set, it always takes priority over Monthly Limit for that month.
+    if (currentMonthLimit !== '' && currentMonthLimit !== null && !isNaN(Number(currentMonthLimit))) {
+      updatedMonthlyLimits[selectedMonth] = Number(currentMonthLimit);
+    } else {
+      delete updatedMonthlyLimits[selectedMonth];
+    }
+
     const updated = {
       ...settings,
       userName: userName.trim() || 'Vault User',
@@ -114,16 +134,14 @@ export default function SettingsBackup({
       theme: theme || 'dark',
       currency,
       currencySymbol: currObj ? currObj.symbol : '₹',
-      defaultMonthlyLimit: Number(defaultLimit),
-      monthlyLimits: {
-        ...(settings.monthlyLimits || {}),
-        [selectedMonth]: Number(currentMonthLimit)
-      },
+      defaultMonthlyLimit: Number(defaultLimit) || 10000,
+      monthlyLimits: updatedMonthlyLimits,
       reminderEnabled,
       reminderTime
     };
 
     onUpdateSettings(updated);
+    syncDailyReminder(reminderTime, reminderEnabled);
     setSaveMessage('Profile & Budget Settings saved successfully!');
     setTimeout(() => setSaveMessage(''), 3500);
   };
@@ -147,21 +165,8 @@ export default function SettingsBackup({
     e.target.value = '';
   };
 
-  const testBrowserNotification = async () => {
-    if (!('Notification' in window)) {
-      alert('This browser does not support desktop notifications.');
-      return;
-    }
-
-    const permission = await Notification.requestPermission();
-    if (permission === 'granted') {
-      new Notification('Expenso 9:00 PM Reminder', {
-        body: 'Time to record your daily personal expenses and shared bills!',
-        icon: '/vite.svg'
-      });
-    } else {
-      alert('Notification permission was denied. Please allow notifications in browser settings.');
-    }
+  const handleTestNotification = async () => {
+    await sendTestNotification();
   };
 
   return (
@@ -330,7 +335,7 @@ export default function SettingsBackup({
 
           <div>
             <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-              Default Monthly Spending Limit ({settings.currencySymbol || '₹'})
+              Monthly Limit ({settings.currencySymbol || '₹'})
             </label>
             <input
               type="number"
@@ -341,13 +346,13 @@ export default function SettingsBackup({
               className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white font-bold text-base sm:text-sm focus:outline-none focus:border-indigo-500 tabular-nums"
             />
             <p className="text-[11px] text-slate-400 mt-1">
-              Applied as default for upcoming months and carries forward automatically.
+              The default limit used for new months.
             </p>
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-              Current Month Override ({BudgetCalculator.formatMonthName(selectedMonth)})
+              Current Month Limit ({BudgetCalculator.formatMonthName(selectedMonth)})
             </label>
             <input
               type="number"
@@ -358,7 +363,7 @@ export default function SettingsBackup({
               className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white font-bold text-base sm:text-sm focus:outline-none focus:border-indigo-500 tabular-nums"
             />
             <p className="text-[11px] text-slate-400 mt-1">
-              Adjusting this limit immediately recalculates your remaining budget and overspent amounts.
+              The limit specifically applied to this month. Always takes priority over Monthly Limit.
             </p>
           </div>
 
@@ -473,10 +478,10 @@ export default function SettingsBackup({
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={testBrowserNotification}
+              onClick={handleTestNotification}
               className="w-full py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-200 border border-slate-700/80 font-semibold text-xs transition-colors cursor-pointer active:scale-98 min-h-[42px]"
             >
-              Test Browser Notification
+              {isNative() ? 'Test Android Notification' : 'Test Browser Notification'}
             </button>
           </div>
         </div>
@@ -495,11 +500,42 @@ export default function SettingsBackup({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
           {/* Export JSON */}
           <button
-            onClick={onExportData}
-            className="p-3.5 sm:p-4 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs flex flex-row sm:flex-col items-center justify-center gap-2.5 sm:gap-2 shadow-md shadow-indigo-600/25 transition-all cursor-pointer active:scale-95 min-h-[44px]"
+            onClick={async () => {
+              if (isExporting) return;
+              setIsExporting(true);
+              try {
+                await onExportData?.();
+                setExportSuccess(true);
+                setTimeout(() => setExportSuccess(false), 3500);
+              } catch (err) {
+                console.error('Export error:', err);
+              } finally {
+                setIsExporting(false);
+              }
+            }}
+            disabled={isExporting}
+            className={`p-3.5 sm:p-4 rounded-xl text-white font-bold text-xs flex flex-row sm:flex-col items-center justify-center gap-2.5 sm:gap-2 shadow-md transition-all cursor-pointer active:scale-95 min-h-[44px] ${
+              exportSuccess
+                ? 'bg-emerald-600 shadow-emerald-600/30'
+                : 'bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 shadow-indigo-600/25'
+            }`}
           >
-            <Download className="w-4 sm:w-5 h-4 sm:h-5 flex-shrink-0" />
-            <span>Export JSON Backup</span>
+            {exportSuccess ? (
+              <>
+                <Check className="w-4 sm:w-5 h-4 sm:h-5 text-emerald-200" />
+                <span>Backup Exported!</span>
+              </>
+            ) : isExporting ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span>Exporting...</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-4 sm:w-5 h-4 sm:h-5 flex-shrink-0" />
+                <span>Export JSON Backup</span>
+              </>
+            )}
           </button>
 
           {/* Import JSON */}

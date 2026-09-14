@@ -118,9 +118,7 @@ export const StorageService = {
       currency,
       currencySymbol,
       defaultMonthlyLimit: Number(defaultMonthlyLimit) || 10000,
-      monthlyLimits: {
-        [currentMonthKey]: Number(defaultMonthlyLimit) || 10000
-      }
+      monthlyLimits: {}
     };
 
     if (loadDemoData) {

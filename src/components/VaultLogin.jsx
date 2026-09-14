@@ -216,14 +216,18 @@ export default function VaultLogin({
   const currentCurrencySymbol = CURRENCIES.find(c => c.code === currency)?.symbol || '₹';
 
   return (
-    <div className="min-h-[100dvh] bg-slate-950 text-slate-100 flex flex-col justify-center items-center px-3.5 sm:px-6 py-6 sm:py-12 relative overflow-hidden selection:bg-indigo-500/40">
+    <div
+      className="fixed inset-0 w-full h-full bg-slate-950 text-slate-100 overflow-y-auto overflow-x-hidden selection:bg-indigo-500/40 overscroll-y-contain z-50"
+      style={{ WebkitOverflowScrolling: 'touch' }}
+    >
       {/* Background Decorative Ambient Glows */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] sm:w-[600px] h-[250px] sm:h-[350px] bg-indigo-600/15 blur-[100px] sm:blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-10 right-1/4 w-[250px] sm:w-[400px] h-[200px] sm:h-[300px] bg-purple-600/10 blur-[80px] sm:blur-[100px] rounded-full pointer-events-none" />
+      <div className="fixed top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] sm:w-[600px] h-[250px] sm:h-[350px] bg-indigo-600/15 blur-[100px] sm:blur-[120px] rounded-full pointer-events-none -z-10" />
+      <div className="fixed bottom-10 right-1/4 w-[250px] sm:w-[400px] h-[200px] sm:h-[300px] bg-purple-600/10 blur-[80px] sm:blur-[100px] rounded-full pointer-events-none -z-10" />
 
-      {/* Main Container */}
-      <div className="w-full max-w-2xl relative z-10">
-        {/* Header Branding */}
+      {/* Main Scrollable Content Container */}
+      <div className="min-h-full w-full flex flex-col items-center justify-start sm:justify-center px-3.5 sm:px-6 py-6 sm:py-10 relative">
+        <div className="w-full max-w-2xl relative z-10 pb-16 sm:pb-20">
+          {/* Header Branding */}
         <div className="text-center mb-6 sm:mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl shadow-xl shadow-indigo-500/25 mb-3 sm:mb-4 border border-indigo-400/30 overflow-hidden group hover:scale-105 transition-transform">
             <img src="/app-icon.png" alt="Expenso" className="w-full h-full object-cover" />
@@ -647,5 +651,6 @@ export default function VaultLogin({
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 }

@@ -14,14 +14,17 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
-    scroll-behavior: smooth;
+    height: 100%;
+    overflow: hidden;
   }
 
   body {
     font-family: var(--font-sans);
     background-color: var(--bg);
     color: var(--fg);
-    min-height: 100vh;
+    height: 100%;
+    height: 100dvh;
+    overflow: hidden;
     letter-spacing: -0.012em;
     line-height: 1.5;
     background-image:
@@ -29,9 +32,19 @@
       radial-gradient(at 100% 100%, color-mix(in srgb, var(--accent) 8%, transparent) 0px, transparent 45%),
       radial-gradient(at 50% 10%, color-mix(in srgb, var(--bg-subtle) 90%, transparent) 0px, transparent 65%);
     background-attachment: fixed;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
     transition:
       background-color var(--duration-theme) var(--ease-out),
       color var(--duration-theme) var(--ease-out);
+  }
+
+  #root {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -67,21 +80,58 @@
 }
 
 /* --------------------------------------------------------------------------
-   Theme Switch Transition (View Transitions API + Fallback)
+   Theme Switch Transition (View Transitions API + Universal Fallback)
    -------------------------------------------------------------------------- */
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation-duration: var(--duration-theme);
-  animation-timing-function: var(--ease-out);
+  animation-duration: 380ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  mix-blend-mode: normal;
 }
 
+::view-transition-old(root) {
+  animation-name: theme-crossfade-out;
+}
+
+::view-transition-new(root) {
+  animation-name: theme-crossfade-in;
+}
+
+@keyframes theme-crossfade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes theme-crossfade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Fluid theme transition fallback for all surfaces, texts, borders, and icons */
 html.theme-switching,
-html.theme-switching * {
+html.theme-switching body,
+html.theme-switching header,
+html.theme-switching nav,
+html.theme-switching main,
+html.theme-switching svg,
+html.theme-switching path,
+html.theme-switching button,
+html.theme-switching input,
+html.theme-switching select,
+html.theme-switching textarea,
+html.theme-switching .glass-panel,
+html.theme-switching .glass-panel-interactive,
+html.theme-switching .glass-modal,
+html.theme-switching [class*="bg-"],
+html.theme-switching [class*="border-"],
+html.theme-switching [class*="text-"] {
   transition:
-    background-color var(--duration-theme) var(--ease-out),
-    border-color var(--duration-theme) var(--ease-out),
-    color var(--duration-theme) var(--ease-out),
-    box-shadow var(--duration-theme) var(--ease-out) !important;
+    background-color 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    fill 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    stroke 380ms cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
 
 /* --------------------------------------------------------------------------
@@ -336,14 +386,14 @@ textarea {
     background-color var(--duration-fast) var(--ease-out);
 }
 
-input[type='text']:focus,
-input[type='number']:focus,
-input[type='date']:focus,
-input[type='tel']:focus,
-input[type='email']:focus,
-input[type='password']:focus,
-select:focus,
-textarea:focus {
+input[type='text']:focus:not(.border-0),
+input[type='number']:focus:not(.border-0),
+input[type='date']:focus:not(.border-0),
+input[type='tel']:focus:not(.border-0),
+input[type='email']:focus:not(.border-0),
+input[type='password']:focus:not(.border-0),
+select:focus:not(.border-0):not(.clean-filter-select),
+textarea:focus:not(.border-0) {
   border-color: var(--primary);
   box-shadow: var(--ring);
 }
@@ -435,30 +485,89 @@ input[type='checkbox']:active {
   }
 }
 
+@keyframes ui-slide-from-right {
+  0% {
+    opacity: 0;
+    transform: translate3d(18px, 0, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes ui-slide-from-left {
+  0% {
+    opacity: 0;
+    transform: translate3d(-18px, 0, 0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
 .page-enter {
-  animation: ui-page-glide 240ms var(--ease-spring) forwards;
+  animation: ui-page-glide 240ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
   will-change: opacity, transform;
+  backface-visibility: hidden;
+}
+
+.page-slide-left {
+  animation: ui-slide-from-right 240ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.page-slide-right {
+  animation: ui-slide-from-left 240ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.swipe-container {
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
 }
 
 .modal-overlay {
-  animation: modalOverlayEnter 220ms var(--ease-out) forwards;
+  animation: modalOverlayEnter 240ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
   will-change: opacity;
+}
+
+/* Item entrance animation for added/edited transactions */
+.item-enter {
+  animation: ui-item-pop 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+}
+
+@keyframes ui-item-pop {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
 }
 
 /* Staggered entry for grids, transaction lists, and cards */
 .stagger-items > * {
-  animation: ui-card-stagger 240ms var(--ease-spring) both;
+  animation: ui-card-stagger 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
   will-change: opacity, transform;
 }
 .stagger-items > *:nth-child(1) { animation-delay: 10ms; }
-.stagger-items > *:nth-child(2) { animation-delay: 30ms; }
-.stagger-items > *:nth-child(3) { animation-delay: 50ms; }
-.stagger-items > *:nth-child(4) { animation-delay: 70ms; }
-.stagger-items > *:nth-child(5) { animation-delay: 90ms; }
-.stagger-items > *:nth-child(6) { animation-delay: 110ms; }
-.stagger-items > *:nth-child(7) { animation-delay: 130ms; }
-.stagger-items > *:nth-child(8) { animation-delay: 150ms; }
-.stagger-items > *:nth-child(n + 9) { animation-delay: 170ms; }
+.stagger-items > *:nth-child(2) { animation-delay: 25ms; }
+.stagger-items > *:nth-child(3) { animation-delay: 45ms; }
+.stagger-items > *:nth-child(4) { animation-delay: 65ms; }
+.stagger-items > *:nth-child(5) { animation-delay: 85ms; }
+.stagger-items > *:nth-child(6) { animation-delay: 105ms; }
+.stagger-items > *:nth-child(7) { animation-delay: 125ms; }
+.stagger-items > *:nth-child(8) { animation-delay: 145ms; }
+.stagger-items > *:nth-child(n + 9) { animation-delay: 165ms; }
 
 /* Linear / Stripe style CTA Shimmer Light-Sweep */
 .btn-shimmer {
@@ -827,13 +936,36 @@ html.light .bg-amber-950\/40 * {
 }
 
 /* Inputs & Form Controls in Light Mode */
-html.light input,
-html.light select,
-html.light textarea {
+html.light input:not(.border-0),
+html.light select:not(.border-0):not(.clean-filter-select),
+html.light textarea:not(.border-0) {
   color: var(--fg) !important;
   background-color: var(--surface-1) !important;
   border: 1px solid var(--border-strong) !important;
   box-shadow: var(--shadow-1) !important;
+}
+
+/* Ensure clean filter dropdowns never have nested inner rectangular boxes or shadows */
+.clean-filter-select,
+html.light .clean-filter-select,
+select.border-0,
+html.light select.border-0 {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background-color: transparent !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+}
+
+.clean-filter-select:focus,
+html.light .clean-filter-select:focus,
+select.border-0:focus,
+html.light select.border-0:focus {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 html.light input::placeholder,
@@ -841,9 +973,9 @@ html.light textarea::placeholder {
   color: var(--fg-faint) !important;
 }
 
-html.light input:focus,
-html.light select:focus,
-html.light textarea:focus {
+html.light input:not(.border-0):focus,
+html.light select:not(.border-0):not(.clean-filter-select):focus,
+html.light textarea:not(.border-0):focus {
   border-color: var(--primary) !important;
   background-color: var(--surface-1) !important;
   box-shadow: var(--ring) !important;
@@ -907,3 +1039,43 @@ html.light .bg-black\/60,
 html.light .bg-black\/80 {
   background-color: var(--overlay) !important;
 }
+
+/* --------------------------------------------------------------------------
+   Fluid Modal & Bottom Sheet Physics
+   -------------------------------------------------------------------------- */
+.modal-overlay {
+  animation: modalOverlayFadeIn 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modalOverlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-sheet {
+  animation: modalSheetSlideUp 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes modalSheetSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-overlay,
+  .modal-sheet {
+    animation: none !important;
+  }
+}
+

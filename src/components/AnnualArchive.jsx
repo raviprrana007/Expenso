@@ -12,6 +12,7 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { PdfArchiveService } from '../services/pdfArchive';
+import { sendDownloadCompleteNotification } from '../utils/notificationService';
 
 export default function AnnualArchive({
   transactions,
@@ -72,7 +73,7 @@ export default function AnnualArchive({
     try {
       setIsGeneratingPdf(true);
       setSuccessMessage('');
-      const result = PdfArchiveService.generateAnnualPdf(selectedYear, transactions, currencySymbol);
+      const result = await PdfArchiveService.generateAnnualPdf(selectedYear, transactions, currencySymbol);
       
       const archiveRecord = {
         id: `arch_${selectedYear}_${Date.now()}`,
@@ -86,6 +87,7 @@ export default function AnnualArchive({
 
       onSaveArchiveRecord(archiveRecord);
       setSuccessMessage(`Annual PDF archive for ${selectedYear} successfully generated and downloaded!`);
+      await sendDownloadCompleteNotification(result.filename, selectedYear);
     } catch (err) {
       alert(`PDF Generation failed: ${err.message}. You can use the TXT Fallback instead.`);
     } finally {
@@ -94,11 +96,11 @@ export default function AnnualArchive({
   };
 
   // Handle TXT Fallback
-  const handleGenerateTxt = () => {
+  const handleGenerateTxt = async () => {
     try {
       setIsGeneratingTxt(true);
       setSuccessMessage('');
-      const result = PdfArchiveService.generateAnnualTxt(selectedYear, transactions, currencySymbol);
+      const result = await PdfArchiveService.generateAnnualTxt(selectedYear, transactions, currencySymbol);
 
       const archiveRecord = {
         id: `arch_${selectedYear}_${Date.now()}`,
@@ -112,6 +114,7 @@ export default function AnnualArchive({
 
       onSaveArchiveRecord(archiveRecord);
       setSuccessMessage(`Annual TXT archive for ${selectedYear} successfully generated and downloaded!`);
+      await sendDownloadCompleteNotification(result.filename, selectedYear);
     } catch (err) {
       alert(`TXT Generation failed: ${err.message}`);
     } finally {
@@ -232,8 +235,15 @@ export default function AnnualArchive({
           <span className="text-[10px] text-slate-500 sm:hidden">Swipe to explore →</span>
         </div>
         
-        {/* Horizontally scrollable container on mobile */}
-        <div className="overflow-x-auto scroll-touch scrollbar-none pb-2 pt-1 -mx-1 px-1">
+        {/* Horizontally scrollable container on mobile (isolated from page swipe) */}
+        <div
+          data-no-swipe="true"
+          className="overflow-x-auto scroll-touch scrollbar-none pb-2 pt-1 -mx-1 px-1 overscroll-x-contain"
+          style={{ touchAction: 'pan-x pan-y' }}
+          onTouchStart={(e) => e.stopPropagation()}
+          onTouchMove={(e) => e.stopPropagation()}
+          onTouchEnd={(e) => e.stopPropagation()}
+        >
           <div className="min-w-[560px] sm:min-w-0 grid grid-cols-12 gap-2 stagger-items">
             {monthNames.map((mName, idx) => {
               const val = monthlyTotals[idx];
