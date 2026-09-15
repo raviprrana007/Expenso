@@ -109,12 +109,13 @@ export default function VaultLogin({
     }
 
     const currObj = CURRENCIES.find(c => c.code === currency) || CURRENCIES[0];
+    const parsedLimit = parseFloat(monthlyLimit);
 
     onNewVault({
       userName: userName.trim(),
       profession: profession.trim() || 'Member',
       profilePic: profilePic || '',
-      defaultMonthlyLimit: Number(monthlyLimit) || 10000,
+      defaultMonthlyLimit: (!isNaN(parsedLimit) && parsedLimit > 0) ? parsedLimit : 10000,
       currency: currObj.code,
       currencySymbol: currObj.symbol,
       loadDemoData
@@ -436,8 +437,9 @@ export default function VaultLogin({
                     </span>
                     <input
                       type="number"
-                      min="0"
-                      step="500"
+                      min="0.01"
+                      step="any"
+                      placeholder="0.00"
                       value={monthlyLimit}
                       onChange={(e) => setMonthlyLimit(e.target.value)}
                       className="w-full pl-9 pr-4 py-2.5 sm:py-3 rounded-xl bg-slate-900/90 border border-slate-700/80 text-white font-bold text-base sm:text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all tabular-nums"

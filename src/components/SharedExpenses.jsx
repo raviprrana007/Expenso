@@ -10,9 +10,11 @@ import {
   UserPlus, 
   Sparkles,
   Layers,
-  CheckCircle2
+  CheckCircle2,
+  CreditCard
 } from 'lucide-react';
 import { StorageService } from '../services/storage';
+import { PAYMENT_MODES, getPaymentModeDisplay } from '../types/constants';
 import Modal from './Modal';
 
 export default function SharedExpenses({
@@ -34,6 +36,8 @@ export default function SharedExpenses({
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [totalAmount, setTotalAmount] = useState('');
   const [payerId, setPayerId] = useState('user'); // 'user' or personId
+  const [paymentMode, setPaymentMode] = useState('upi');
+  const [customPaymentMode, setCustomPaymentMode] = useState('');
   const [splitMode, setSplitMode] = useState('equal'); // 'equal' or 'custom'
   
   // Selected participants (list of { id, name, phone, shareAmount })
@@ -52,6 +56,8 @@ export default function SharedExpenses({
     setDate(new Date().toISOString().split('T')[0]);
     setTotalAmount('');
     setPayerId('user');
+    setPaymentMode('upi');
+    setCustomPaymentMode('');
     setSplitMode('equal');
     setParticipants([{ id: 'user', name: 'You (Myself)', shareAmount: 0 }]);
     setSuggestedId(StorageService.generateUniquePersonId());
@@ -64,6 +70,9 @@ export default function SharedExpenses({
     setDate(expense.date || new Date().toISOString().split('T')[0]);
     setTotalAmount(expense.totalAmount ? String(expense.totalAmount) : '');
     setPayerId(expense.payerId || 'user');
+    const isPredefinedMode = PAYMENT_MODES.some(m => m.id === expense.paymentMode);
+    setPaymentMode(isPredefinedMode ? (expense.paymentMode || 'upi') : 'custom');
+    setCustomPaymentMode(isPredefinedMode ? '' : (expense.customPaymentMode || expense.paymentMode || ''));
     setSplitMode(expense.splitMode || 'equal');
     setParticipants(expense.participants || [{ id: 'user', name: 'You (Myself)', shareAmount: 0 }]);
     setSuggestedId(StorageService.generateUniquePersonId());
@@ -169,6 +178,10 @@ export default function SharedExpenses({
 
     const calculatedUserShare = finalShares.find(p => p.id === 'user')?.share || 0;
 
+    const finalPaymentMode = paymentMode === 'custom'
+      ? (customPaymentMode.trim() || 'Custom')
+      : paymentMode;
+
     const expenseRecord = {
       id: editingExpense ? editingExpense.id : `se_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       title: title.trim(),
@@ -176,6 +189,8 @@ export default function SharedExpenses({
       totalAmount: parsedTotal,
       payerId,
       payerName,
+      paymentMode: finalPaymentMode,
+      customPaymentMode: paymentMode === 'custom' ? customPaymentMode.trim() : '',
       splitMode,
       participants: finalShares,
       userShare: calculatedUserShare,
@@ -229,6 +244,7 @@ export default function SharedExpenses({
         <div className="space-y-4 stagger-items">
           {sharedExpenses.map(expense => {
             const isUserPayer = expense.payerId === 'user';
+            const modeInfo = getPaymentModeDisplay(expense.paymentMode, expense.customPaymentMode);
             return (
               <div
                 key={expense.id}
@@ -245,6 +261,10 @@ export default function SharedExpenses({
                       <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mt-0.5">
                         <span className="flex items-center gap-1 tabular-nums">
                           <Calendar className="w-3.5 h-3.5 text-slate-500" /> {expense.date}
+                        </span>
+                        <span>•</span>
+                        <span className={`text-[9px] sm:text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full border ${modeInfo.color}`}>
+                          {modeInfo.name}
                         </span>
                         <span>•</span>
                         <span>{expense.participants.length} People</span>
@@ -421,6 +441,47 @@ export default function SharedExpenses({
                     ? '✓ Your share becomes personal spending; others\' shares become Dues to collect.' 
                     : '✓ Your share becomes personal spending AND an Owe payable to this friend.'}
                 </p>
+              </div>
+
+              {/* Mode of Transaction */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                  <CreditCard className="w-3.5 h-3.5 text-purple-400" />
+                  <span>Mode of Transaction *</span>
+                </label>
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+                  {PAYMENT_MODES.map((mode) => {
+                    const isSelected = paymentMode === mode.id;
+                    return (
+                      <button
+                        type="button"
+                        key={mode.id}
+                        onClick={() => setPaymentMode(mode.id)}
+                        className={`py-2 px-1 rounded-xl text-center border text-xs font-semibold transition-all cursor-pointer btn-press ${
+                          isSelected
+                            ? 'bg-purple-600 text-white border-purple-500 shadow-md shadow-purple-600/30'
+                            : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                        }`}
+                      >
+                        {mode.name}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Custom Payment Mode Input */}
+                {paymentMode === 'custom' && (
+                  <div className="mt-2 animate-in fade-in">
+                    <input
+                      type="text"
+                      required
+                      placeholder="Enter custom mode (e.g. Crypto, Cheque, Gift Voucher)"
+                      value={customPaymentMode}
+                      onChange={(e) => setCustomPaymentMode(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-purple-500/50 text-white text-base sm:text-xs placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Participants Section */}

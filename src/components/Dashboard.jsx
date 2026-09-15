@@ -79,8 +79,11 @@ function AnimatedNumber({ value = 0, prefix = '', suffix = '', decimals = 0, cla
     };
   }, [value]);
 
-  const formatted = decimals > 0 
-    ? Number(displayValue).toFixed(decimals) 
+  const hasDecimals = value !== undefined && value !== null && !isNaN(Number(value)) && (Number(value) % 1 !== 0);
+  const effectiveDecimals = decimals > 0 ? decimals : (hasDecimals ? 2 : 0);
+
+  const formatted = effectiveDecimals > 0 
+    ? Number(displayValue).toLocaleString(undefined, { minimumFractionDigits: effectiveDecimals, maximumFractionDigits: effectiveDecimals }) 
     : Math.round(Number(displayValue)).toLocaleString();
 
   return <span className={className}>{prefix}{formatted}{suffix}</span>;

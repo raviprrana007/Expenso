@@ -120,11 +120,17 @@ export default function SettingsBackup({
     const updatedMonthlyLimits = { ...(settings.monthlyLimits || {}) };
 
     // Priority rule: If Current Month Limit is set, it always takes priority over Monthly Limit for that month.
-    if (currentMonthLimit !== '' && currentMonthLimit !== null && !isNaN(Number(currentMonthLimit))) {
-      updatedMonthlyLimits[selectedMonth] = Number(currentMonthLimit);
+    const parsedCurrentLimit = parseFloat(currentMonthLimit);
+    if (currentMonthLimit !== '' && currentMonthLimit !== null && !isNaN(parsedCurrentLimit) && parsedCurrentLimit > 0) {
+      updatedMonthlyLimits[selectedMonth] = parsedCurrentLimit;
     } else {
       delete updatedMonthlyLimits[selectedMonth];
     }
+
+    const parsedDefault = parseFloat(defaultLimit);
+    const finalDefaultLimit = (!isNaN(parsedDefault) && parsedDefault > 0)
+      ? parsedDefault
+      : (settings.defaultMonthlyLimit || 10000);
 
     const updated = {
       ...settings,
@@ -134,7 +140,7 @@ export default function SettingsBackup({
       theme: theme || 'dark',
       currency,
       currencySymbol: currObj ? currObj.symbol : '₹',
-      defaultMonthlyLimit: Number(defaultLimit) || 10000,
+      defaultMonthlyLimit: finalDefaultLimit,
       monthlyLimits: updatedMonthlyLimits,
       reminderEnabled,
       reminderTime
@@ -339,14 +345,16 @@ export default function SettingsBackup({
             </label>
             <input
               type="number"
-              min="0"
-              step="100"
+              min="0.01"
+              step="any"
+              placeholder="0.00"
+              required
               value={defaultLimit}
               onChange={(e) => setDefaultLimit(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white font-bold text-base sm:text-sm focus:outline-none focus:border-indigo-500 tabular-nums"
             />
             <p className="text-[11px] text-slate-400 mt-1">
-              The default limit used for new months.
+              The default limit used for new months. Accepts any positive value and decimal amounts.
             </p>
           </div>
 
@@ -356,14 +364,15 @@ export default function SettingsBackup({
             </label>
             <input
               type="number"
-              min="0"
-              step="100"
+              min="0.01"
+              step="any"
+              placeholder="0.00"
               value={currentMonthLimit}
               onChange={(e) => setCurrentMonthLimit(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white font-bold text-base sm:text-sm focus:outline-none focus:border-indigo-500 tabular-nums"
             />
             <p className="text-[11px] text-slate-400 mt-1">
-              The limit specifically applied to this month. Always takes priority over Monthly Limit.
+              The limit specifically applied to this month. Always takes priority over Monthly Limit. Accepts any positive value and decimal amounts.
             </p>
           </div>
 
